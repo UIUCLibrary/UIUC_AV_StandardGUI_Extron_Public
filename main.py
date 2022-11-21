@@ -9,17 +9,18 @@ from extronlib.interface import (CircuitBreakerInterface, ContactInterface,
 from extronlib.ui import Button, Knob, Label, Level, Slider
 from extronlib.system import Clock, MESet, Timer, Wait, File, SaveProgramLog
 
-## Begin Python Built-In Imports -----------------------------------------------
-from dateime import datetime
-
-## Begin Local Imports ---------------------------------------------------------
-from guiControl import *
-
-print(Version())
-
+print(Version()) ## Sanity check ControlScript Import
 ## End ControlScript Import ----------------------------------------------------
 ##
+## Begin Python Imports --------------------------------------------------------
+from datetime import datetime
+from json import *
+## End Python Imports ----------------------------------------------------------
+##
 ## Begin User Import -----------------------------------------------------------
+#### Custom Code Modules
+from guiControl import *
+#### Extron Global Scripter Modules
 
 ## End User Import -------------------------------------------------------------
 ##
@@ -38,6 +39,8 @@ TP_Main = UIDevice('TP001')
 ## Begin Communication Interface Definition ------------------------------------
 
 ## End Communication Interface Definition --------------------------------------
+##
+## Begin Function Definitions --------------------------------------------------
 
 def Initialize():
     TP_Main.ShowPage('Splash')
@@ -46,8 +49,11 @@ def Initialize():
     
     print('System Initialized')
 
+## End Function Definitions ----------------------------------------------------
+##
 ## Event Definitions -----------------------------------------------------------
 
-## End Events Definitions-------------------------------------------------------
-
+## End Events Definitions ------------------------------------------------------
+##
+## Start Program ---------------------------------------------------------------
 Initialize()
