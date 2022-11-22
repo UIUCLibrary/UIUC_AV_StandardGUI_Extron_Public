@@ -6,27 +6,38 @@ from extronlib.interface import (CircuitBreakerInterface, ContactInterface,
     EthernetServerInterfaceEx, FlexIOInterface, IRInterface, PoEInterface,
     RelayInterface, SerialInterface, SWACReceptacleInterface, SWPowerInterface,
     VolumeInterface)
-from extronlib.ui import Button, Knob, Label, Level
-from extronlib.system import Clock, MESet, Timer, Wait, File, RFile, ProgramLog
+from extronlib.ui import Button, Knob, Label, Level, Slider
+from extronlib.system import (Email, Clock, MESet, Timer, Wait, File, RFile,
+    ProgramLog, SaveProgramLog, Ping, WakeOnLan, SetAutomaticTime, SetTimeZone)
 
 print(Version()) ## Sanity check ControlScript Import
 ## End ControlScript Import ----------------------------------------------------
 ##
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
-import json
+from json import json
 ## End Python Imports ----------------------------------------------------------
 ##
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
-from guiControl import *
+
 #### Extron Global Scripter Modules
 
 ## End User Import -------------------------------------------------------------
 ##
 ## Begin Function Definitions --------------------------------------------------
 
+
 def BuildButtons(jsonObj = {}, jsonPath = ""):
+    """Build a dictionary of Extron Buttons from a json object or file
+    
+    Keyword arguments (only one arg required, jsonObj takes precedence over jsonPath):\n
+        jsonObj -- the json object containing button information\n
+        jsonPath -- the path to the file containing json formatted button information\n
+    
+    Returns a dictionary object containing buttons on success.
+    Returns false on failure.
+    """
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
     buttonDict = {}
@@ -37,14 +48,32 @@ def BuildButtons(jsonObj = {}, jsonPath = ""):
         jsonStr = jsonFile.read()
         jsonFile.close()
         jsonObj = json.loads(jsonStr)
+    elif jsonPath != "" and not File.Exists(jsonPath):
+        return False
 
-    ## format button info into buttonDict
-    for button in jsonObj.buttons:
-        ## TODO: Sort out initializing hold and repeat times
-        buttonDict[button.Name] = Button(button.UIHost, button.ID)
-
-    ## return buttonDict
-    return buttonDict
+    
+    try:
+        ## format button info into buttonDict
+        for button in jsonObj.buttons:
+            if button.holdTime == None and button.repeatTime == None:
+                buttonDict[button.Name] = Button(button.UIHost, button.ID)
+            elif button.holdTime != None and button.repeatTime == None:
+                buttonDict[button.Name] = Button(button.UIHost, button.ID,
+                                                 holdTime = button.holdTime)
+            elif button.holdTime == None and button.repeatTime != None:
+                buttonDict[button.Name] = Button(button.UIHost, button.ID, 
+                                                 repeatTime = button.repeatTime)
+            elif button.holdTime != None and button.repeatTime != None:
+                buttonDict[button.Name] = Button(button.UIHost, button.ID,
+                                                 holdTime = button.holdTime,
+                                                 repeatTime = button.repeatTime)
+        ## return buttonDict
+        return buttonDict
+    except Exception as inst:
+        ## TODO: log exception to program log
+        # https://docs.python.org/3/tutorial/errors.html
+        # file:///C:/Program%20Files%20(x86)/Extron/GlobalScripter/Help/Content/Resources/ExtronLib/latest/system.html#other-methods
+        return False
 
 ## End Function Definitions ----------------------------------------------------
 ##
