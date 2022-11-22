@@ -16,6 +16,7 @@ print(Version()) ## Sanity check ControlScript Import
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
 from json import json
+from typing import Dict, Tuple, List
 ## End Python Imports ----------------------------------------------------------
 ##
 ## Begin User Import -----------------------------------------------------------
@@ -28,10 +29,11 @@ from json import json
 ## Begin Function Definitions --------------------------------------------------
 
 
-def BuildButtons(jsonObj = {}, jsonPath = ""):
+def BuildButtons(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""):
     """Build a dictionary of Extron Buttons from a json object or file
     
-    Keyword arguments (only one arg required, jsonObj takes precedence over jsonPath):\n
+    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
+        UIHost (required) -- the UIHost object to assign buttons to\n
         jsonObj -- the json object containing button information\n
         jsonPath -- the path to the file containing json formatted button information\n
     
@@ -56,15 +58,15 @@ def BuildButtons(jsonObj = {}, jsonPath = ""):
         ## format button info into buttonDict
         for button in jsonObj.buttons:
             if button.holdTime == None and button.repeatTime == None:
-                buttonDict[button.Name] = Button(button.UIHost, button.ID)
+                buttonDict[button.Name] = Button(UIHost, button.ID)
             elif button.holdTime != None and button.repeatTime == None:
-                buttonDict[button.Name] = Button(button.UIHost, button.ID,
+                buttonDict[button.Name] = Button(UIHost, button.ID,
                                                  holdTime = button.holdTime)
             elif button.holdTime == None and button.repeatTime != None:
-                buttonDict[button.Name] = Button(button.UIHost, button.ID, 
+                buttonDict[button.Name] = Button(UIHost, button.ID, 
                                                  repeatTime = button.repeatTime)
             elif button.holdTime != None and button.repeatTime != None:
-                buttonDict[button.Name] = Button(button.UIHost, button.ID,
+                buttonDict[button.Name] = Button(UIHost, button.ID,
                                                  holdTime = button.holdTime,
                                                  repeatTime = button.repeatTime)
         ## return buttonDict
