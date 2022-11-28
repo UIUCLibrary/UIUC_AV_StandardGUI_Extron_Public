@@ -21,6 +21,7 @@ from json import json
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
 from guiControl import *
+
 #### Extron Global Scripter Modules
 
 ## End User Import -------------------------------------------------------------
@@ -34,6 +35,22 @@ CtlProc_Main = ProcessorDevice('CTL001')
 ## Begin Device/User Interface Definition --------------------------------------
 
 TP_Main = UIDevice('TP001')
+
+#### Build Buttons & Button Groups
+TP_Btns = BuildButtons(TP_Main, jsonPath='controls.json')
+TP_Btn_Grps = BuildButtonGroups(TP_Btns, jsonPath="controls.json")
+
+#### Build Knobs
+TP_Knobs = BuildKnobs(TP_Main, jsonPath='controls.json')
+
+#### Build Levels
+TP_Lvls = BuildLevels(TP_Main, jsonPath='controls.json')
+
+#### Build Sliders
+TP_Slds = BuildSliders(TP_Main, jsonPath='controls.json')
+
+#### Build Labels
+TP_Lbls = BuildLabels(TP_Main, jsonPath='controls.json')
 
 ## End Device/User Interface Definition ----------------------------------------
 ##
