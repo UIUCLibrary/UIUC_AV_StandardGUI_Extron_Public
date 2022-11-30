@@ -34,8 +34,19 @@ import config
 def InitSourceModule(UIHost: extronlib.device,
                      sourceBtns: extronlib.system.MESet,
                      arrowBtns: List[extronlib.ui.Button],
-                     DoSourceSwitch: function):
-    # TODO: write source module doc string
+                     DoSourceSwitch: function) -> bool:
+    # TODO: ensure argument typing is correct
+    """Initializes Source Switching module
+
+    Args:
+        UIHost (extronlib.device): UIHost to which the buttons are assigned
+        sourceBtns (extronlib.system.MESet): MESet of source buttons
+        arrowBtns (List[extronlib.ui.Button]): List of arrow button objects
+        DoSourceSwitch (function): Function to run when doing a source switch should accept two arguments, first source, second destination if destination is not provided, all is assumed
+
+    Returns:
+        bool: true on success and false on failure
+    """
 
     try:
         @event(sourceBtns.Objects, 'Pressed')
@@ -77,7 +88,18 @@ def InitSourceModule(UIHost: extronlib.device,
 def UpdateSourceMenu(UIHost: extronlib.device,
                      sourceBtns: extronlib.system.MESet,
                      arrowBtns: List[extronlib.ui.Button]):
-    # TODO: write update sources document string
+    # TODO: ensure the typing is correct
+    """Updates the formatting of the source menu. Use when the number of sources
+    or the pagination of the source bar changes
+
+    Args:
+        UIHost (extronlib.device): UIHost to which the buttons are assigned
+        sourceBtns (extronlib.system.MESet): MESet of source buttons
+        arrowBtns (List[extronlib.ui.Button]): List of arrow buttons
+
+    Returns:
+        none
+    """    
     srcList = []
     srcNone = {"id": "none", "name": "None", "icon": 0}
     offset = config.sourceOffset
@@ -110,8 +132,6 @@ def UpdateSourceMenu(UIHost: extronlib.device,
             arrowBtns[1].SetState(0)
         
         UIHost.ShowPopup('Menu-Source-5+')
-
-    return True
 
 ## End Function Definitions ----------------------------------------------------
 ##

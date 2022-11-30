@@ -39,14 +39,26 @@ def InitActivityModule(UIHost: extronlib.device,
                        confTimeLvl: extronlib.ui.Level,
                        DoSystemStart: function,
                        DoSystemSwitch: function,
-                       DoSystemShutdown: function):
+                       DoSystemShutdown: function) -> bool:
     # TODO: verify the typing for activityBtns
-    # TODO: write function doc string
+    """Initializes the Activity Selection module
     
-    # actBtns: extronlib.system.MESet,
-    # actInds: extronlib.system.MESet,
-    # confEndBtn: extronlib.ui.Button,
-    # confCancelBtn: extronlib.ui.Button,
+    Args:
+        UIHost (extronlib.device): UIHost to which the buttons are assigned
+        activityBtns (Dict[extronlib.system.MESet, extronlib.system.MESet, extronlib.ui.Button, extronlib.ui.Button]): a dictionary of activity buttons. Should contain the following keys/value pairs:
+            select: MESet of selection buttons
+            indicator: MESet of indicator buttons
+            end: Shutdown Confirmation End Now button
+            cancel: Shutdown confirmation cancel shutdown button
+        confTimeLbl (extronlib.ui.Label): Shutdown confirmation text label
+        confTimeLvl (extronlib.ui.Level): Shutdown confirmation level indicator
+        DoSystemStart (function): System start function, receives no arguments
+        DoSystemSwitch (function): System activity switch function, receives no arguments
+        DoSystemShutdown (function): System shutdown function, receives no arguments
+
+    Returns:
+        bool: True on success or False on failure
+    """
 
     shutdownTimer = Timer(1, ConfHandler)        
 

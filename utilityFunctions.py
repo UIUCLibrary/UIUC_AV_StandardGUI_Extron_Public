@@ -30,7 +30,17 @@ import config
 ##
 ## Begin Function Definitions --------------------------------------------------
 
-def TimeIntToStr(time: int, units: bool = True):
+def TimeIntToStr(time: int, units: bool = True) -> str:
+    """Converts integer seconds to human readable string
+
+    Args:
+        time (int): integer time in seconds
+        units (bool, optional): True to display units (m minutes s seconds) or
+            false to return a unitless string (DD:HH:MM:SS). Defaults to True.
+
+    Returns:
+        str: Time string
+    """    
     returnStr = ''
     seconds = 0
     minutes = 0

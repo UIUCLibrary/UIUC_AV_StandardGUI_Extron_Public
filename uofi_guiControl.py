@@ -33,15 +33,16 @@ import config
 
 def BuildButtons(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""):
     """Builds a dictionary of Extron Buttons from a json object or file
+
+    Args (only one json arg required, jsonObj takes precedence over jsonPath):
+        UIHost (extronlib.device): UIHost to which the buttons are assigned
+        jsonObj (Dict, optional): The json object containing button information. Defaults to {}.
+        jsonPath (str, optional): The path to the file containing json formatted button information. Defaults to "".
+
+    Returns:
+        Dict|False: Returns dictionary object of buttons on success or false on failure
+    """    
     
-    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
-        UIHost (required) -- the UIHost object to assign buttons to\n
-        jsonObj -- the json object containing button information\n
-        jsonPath -- the path to the file containing json formatted button information\n
-    
-    Returns a dictionary object containing buttons on success.
-    Returns false on failure.
-    """
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
     btnDict = {}
@@ -85,14 +86,14 @@ def BuildButtons(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = "
 
 def BuildButtonGroups(btnDict: Dict, jsonObj: Dict = {}, jsonPath: str = ""):
     """Builds a dictionary of mutually exclusive button groups from a json object or file
-    
-    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
-        btnDict (required) -- the dictionary of available button objects\n
-        jsonObj -- the json object containing button group information\n
-        jsonPath -- the path to the file containing json formatted button group information\n
-    
-    Returns a dictionary object containing Extron MESet objects on success.
-    Returns false on failure.
+
+    Args (only one json arg required, jsonObj takes precedence over jsonPath):
+        btnDict (Dict): The dictionary of available button objects
+        jsonObj (Dict, optional): The json object containing button group information. Defaults to {}.
+        jsonPath (str, optional): The path to the file containing json formatted button group information. Defaults to "".
+
+    Returns:
+        Dict|False: Returns a dictionary containing Extron MESet objects on success, or False on failure
     """
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
@@ -129,15 +130,15 @@ def BuildButtonGroups(btnDict: Dict, jsonObj: Dict = {}, jsonPath: str = ""):
 
 def BuildKnobs(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""):
     """Builds a dictionary of Extron Knobs from a json object or file
-    
-    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
-        UIHost (required) -- the UIHost object to assign knobs to\n
-        jsonObj -- the json object containing knob information\n
-        jsonPath -- the path to the file containing json formatted knob information\n
-    
-    Returns a dictionary object containing knobs on success.
-    Returns false on failure.
-    """
+
+    Args (only one json arg required, jsonObj takes precedence over jsonPath):
+        UIHost (extronlib.device): UIHost to which the knobs are assigned
+        jsonObj (Dict, optional): The json object containing knob information. Defaults to {}.
+        jsonPath (str, optional): The path to the file containing json formatted knob information. Defaults to "".
+
+    Returns:
+        Dict|False: Returns a dictionary containing Extron Knob objects on success, or False on failure
+    """    
     
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
@@ -168,15 +169,15 @@ def BuildKnobs(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = "")
 
 def BuildLevels(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""):
     """Builds a dictionary of Extron Levels from a json object or file
-    
-    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
-        UIHost (required) -- the UIHost object to assign levels to\n
-        jsonObj -- the json object containing level information\n
-        jsonPath -- the path to the file containing json formatted level information\n
-    
-    Returns a dictionary object containing levels on success.
-    Returns false on failure.
-    """
+
+    Args:
+        UIHost (extronlib.device): UIHost to which the levels are assigned
+        jsonObj (Dict, optional): The json object containing level information. Defaults to {}.
+        jsonPath (str, optional): The path to the file containing json formatted level information. Defaults to "".
+
+    Returns:
+        Dict|False: Returns a dictionary containing Extron Level objects on success, or False on failure
+    """    
     
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
@@ -207,15 +208,15 @@ def BuildLevels(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""
 
 def BuildSliders(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""):
     """Builds a dictionary of Extron Sliders from a json object or file
-    
-    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
-        UIHost (required) -- the UIHost object to assign sliders to\n
-        jsonObj -- the json object containing slider information\n
-        jsonPath -- the path to the file containing json formatted slider information\n
-    
-    Returns a dictionary object containing sliders on success.
-    Returns false on failure.
-    """
+
+    Args (only one json arg required, jsonObj takes precedence over jsonPath):
+        UIHost (extronlib.device): UIHost to which the sliders are assigned
+        jsonObj (Dict, optional): The json object containing slider information. Defaults to {}.
+        jsonPath (str, optional): The path to the file containing json formatted slider information. Defaults to "".
+
+    Returns:
+        Dict|False: Returns a dictionary of Extron Slider objects on success, or False on failure
+    """    
     
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
@@ -246,15 +247,15 @@ def BuildSliders(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = "
 
 def BuildLabels(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = ""):
     """Builds a dictionary of Extron Labels from a json object or file
-    
-    Keyword arguments (only one json arg required, jsonObj takes precedence over jsonPath):\n
-        UIHost (required) -- the UIHost object to assign labels to\n
-        jsonObj -- the json object containing label information\n
-        jsonPath -- the path to the file containing json formatted label information\n
-    
-    Returns a dictionary object containing labels on success.
-    Returns false on failure.
-    """
+
+    Args (only one json arg required, jsonObj takes precedence over jsonPath):
+        UIHost (extronlib.device): UIHost to which the labels are assigned
+        jsonObj (Dict, optional): The json object containing label information. Defaults to {}.
+        jsonPath (str, optional): The path to the file containing json formatted label information. Defaults to "".
+
+    Returns:
+        Dict|False: Returns a dictionary of Extron Label objects on success, or False on failure
+    """    
     
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
