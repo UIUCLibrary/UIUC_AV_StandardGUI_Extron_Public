@@ -21,6 +21,8 @@ from typing import Dict, Tuple, List
 ##
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
+import utilityFunctions
+import config
 
 #### Extron Global Scripter Modules
 
@@ -56,20 +58,20 @@ def BuildButtons(UIHost: extronlib.device, jsonObj: Dict = {}, jsonPath: str = "
     
     try:
         ## format button info into btnDict
-        for button in jsonObj.buttons:
+        for button in jsonObj['buttons']:
             ## only sets holdTime or repeatTime for non null/None values
-            if button.holdTime == None and button.repeatTime == None:
-                btnDict[button.Name] = Button(UIHost, button.ID)
-            elif button.holdTime != None and button.repeatTime == None:
-                btnDict[button.Name] = Button(UIHost, button.ID,
-                                                 holdTime = button.holdTime)
-            elif button.holdTime == None and button.repeatTime != None:
-                btnDict[button.Name] = Button(UIHost, button.ID, 
-                                                 repeatTime = button.repeatTime)
-            elif button.holdTime != None and button.repeatTime != None:
-                btnDict[button.Name] = Button(UIHost, button.ID,
-                                                 holdTime = button.holdTime,
-                                                 repeatTime = button.repeatTime)
+            if button['holdTime'] == None and button['repeatTime'] == None:
+                btnDict[button['Name']] = Button(UIHost, button['ID'])
+            elif button['holdTime'] != None and button['repeatTime'] == None:
+                btnDict[button['Name']] = Button(UIHost, button['ID'],
+                                                 holdTime = button['holdTime'])
+            elif button['holdTime'] == None and button['repeatTime'] != None:
+                btnDict[button['Name']] = Button(UIHost, button['ID'], 
+                                                 repeatTime = button['repeatTime'])
+            elif button['holdTime'] != None and button['repeatTime'] != None:
+                btnDict[button['Name']] = Button(UIHost, button['ID'],
+                                                 holdTime = button['holdTime'],
+                                                 repeatTime = button['repeatTime'])
         
         ## return btnDict
         return btnDict
@@ -107,13 +109,13 @@ def BuildButtonGroups(btnDict: Dict, jsonObj: Dict = {}, jsonPath: str = ""):
     
     try:
         ## create MESets and build grpDict
-        for group in jsonObj.buttonGroups:
+        for group in jsonObj['buttonGroups']:
             ## reset btnList and populate it from the jsonObj
             btnList = []
-            for btn in group.buttons:
+            for btn in group['buttons']:
                 ## get button objects from Dict and add to list
                 btnList.append(btnDict[btn])
-            grpDict[group.name] = MESet(btnList)
+            grpDict[group['name']] = MESet(btnList)
         
         ## return grpDict
         return grpDict

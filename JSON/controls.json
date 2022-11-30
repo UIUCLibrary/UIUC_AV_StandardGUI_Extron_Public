@@ -332,7 +332,7 @@
         },
         {
           "Name": "PIN-Cancel",
-          "ID": 9000,
+          "ID": 9010,
           "holdTime": null,
           "repeatTime": null
         },
@@ -392,7 +392,7 @@
         },
         {
           "Name": "PIN-0",
-          "ID": 9010,
+          "ID": 9000,
           "holdTime": null,
           "repeatTime": null
         },
@@ -1538,6 +1538,15 @@
             "ActivitySelect-Share",
             "ActivitySelect-AdvShare",
             "ActivitySelect-GroupWork"
+          ]
+        },
+        {
+          "name":"Activity-Indicator",
+          "buttons":[
+            "ActivityIndicator-Off",
+            "ActivityIndicator-Share",
+            "ActivityIndicator-AdvShare",
+            "ActivityIndicator-GroupWork"
           ]
         }
     ],
