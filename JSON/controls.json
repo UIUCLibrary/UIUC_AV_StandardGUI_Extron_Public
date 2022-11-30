@@ -1515,21 +1515,31 @@
       ],
     "buttonGroups": [
         {
-            "name":"Camera-Select",
-            "buttons":[
-                "Ctl-Camera-Select-CAM001",
-                "Ctl-Camera-Select-CAM002"
-            ]
+          "name":"Camera-Select",
+          "buttons":[
+            "Ctl-Camera-Select-CAM001",
+            "Ctl-Camera-Select-CAM002"
+          ]
         },
         {
-            "name":"Source-Select",
-            "buttons":[
-                "Source-1",
-                "Source-2",
-                "Source-3",
-                "Source-4",
-                "Source-5"
-            ]
+          "name":"Source-Select",
+          "buttons":[
+            "Source-1",
+            "Source-2",
+            "Source-3",
+            "Source-4",
+            "Source-5"
+          ]
+        },
+        {
+          "name":"Source-Indicator",
+          "buttons":[
+            "SourceIndicator-1",
+            "SourceIndicator-2",
+            "SourceIndicator-3",
+            "SourceIndicator-4",
+            "SourceIndicator-5"
+          ]
         },
         {
           "name":"Activity-Select",

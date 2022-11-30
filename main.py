@@ -107,9 +107,27 @@ def Initialize():
                        SystemSwitch,
                        SystemShutdown)
 
+    #### Source Control Module
+    InitSourceModule(TP_Main,
+                     TP_Btn_Grps['Source-Select'],
+                     TP_Btn_Grps['Source-Indicator']
+                     [TP_Btns['SourceMenu-Prev'], TP_Btns['SourceMenu-Next']],
+                     SwitchSources)
     ## DO ADDITIONAL INITIALIZATION ITEMS HERE
     
     print('System Initialized')
+
+def SwitchSources(src: str, dest: str = 'all') -> None:
+    """Switch system sources
+
+    Args:
+        src (str): Source ID string
+        dest (str, optional): Destination to send source. Defaults to 'all'.
+        
+    Return:
+        none
+    """    
+    pass
 
 def SystemStart(activity):
     startupTime = config.startupTimer
@@ -177,6 +195,11 @@ def SystemSwitch(activity):
         TP_Main.ShowPopup("Activity-Control-AdvShare")
     elif  activity == "group_work":
         TP_Main.ShowPopup("Activity-Control-Group")
+        
+    UpdateSourceMenu(TP_Main,
+                     TP_Btn_Grps['Source-Select'],
+                     TP_Btn_Grps['Source-Indicator']
+                     [TP_Btns['SourceMenu-Prev'], TP_Btns['SourceMenu-Next']])
 
 def SystemShutdown():
     shutdownTime = config.shutdownTimer

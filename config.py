@@ -17,17 +17,46 @@ defaultSource = "PC001"    # Default source on activity switch
 #     4 - Camera
 #     5 - Document Camera
 #     6 - BluRay
-sources = [
-            {"id": "PC001",
-             "name": "Room PC",
-             "icon": 2},
-            {"id": "WPD001",
-             "name": "Wireless Pres.",
-             "icon": 3},
-            {"id": "PL001",
-             "name": "HDMI",
-             "icon": 1}
-          ]
+sources = \
+   [
+      {
+         "id": "PC001",
+         "name": "Room PC",
+         "icon": 2,
+         "input": 1
+      },
+      {
+         "id": "WPD001",
+         "name": "Wireless Pres.",
+         "icon": 3,
+         "input": 2
+      },
+      {
+         "id": "PL001",
+         "name": "HDMI",
+         "icon": 1,
+         "input": 3
+      }
+   ]
+   
+destinations = \
+   [
+      {
+         "id": "PRJ001",
+         "name": "Projector",
+         "output": 1
+      },
+      {
+         "id": "MON001",
+         "name": "North Monitor",
+         "output": 3
+      },
+      {
+         "id": "MON004",
+         "name": "South Monitor",
+         "output": 4
+      }
+   ]
 
 techPIN = "1867"           # PIN Code to access tech pages, must be a string
                            # fewer than 10 characters of 0-9
@@ -40,10 +69,11 @@ techPIN = "1867"           # PIN Code to access tech pages, must be a string
 activity = "off"
 source = "none"
 sourceOffset = 0
-activityDict = {
-                "share": "Sharing", 
-                "adv_share": "Adv. Sharing",
-                "group_work": "Group Work"
-                }
+activityDict = \
+   {
+      "share": "Sharing", 
+      "adv_share": "Adv. Sharing",
+      "group_work": "Group Work"
+   }
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
