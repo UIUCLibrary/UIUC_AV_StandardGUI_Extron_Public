@@ -26,7 +26,7 @@ from uofi_pinCode import *
 from uofi_sourceControls import *
 
 import utilityFunctions
-import config
+import settings
 
 #### Extron Global Scripter Modules
 
@@ -34,29 +34,29 @@ import config
 ##
 ## Begin Device/Processor Definition -------------------------------------------
 
-config.CtlProc_Main = ProcessorDevice('CTL001')
+settings.CtlProc_Main = ProcessorDevice('CTL001')
 
 ## End Device/Processor Definition ---------------------------------------------
 ##
 ## Begin Device/User Interface Definition --------------------------------------
 
-config.TP_Main = UIDevice('TP001')
+settings.TP_Main = UIDevice('TP001')
 
 #### Build Buttons & Button Groups
-TP_Btns = BuildButtons(config.TP_Main, jsonPath='controls.json')
+TP_Btns = BuildButtons(settings.TP_Main, jsonPath='controls.json')
 TP_Btn_Grps = BuildButtonGroups(TP_Btns, jsonPath="controls.json")
 
 #### Build Knobs
-TP_Knobs = BuildKnobs(config.TP_Main, jsonPath='controls.json')
+TP_Knobs = BuildKnobs(settings.TP_Main, jsonPath='controls.json')
 
 #### Build Levels
-TP_Lvls = BuildLevels(config.TP_Main, jsonPath='controls.json')
+TP_Lvls = BuildLevels(settings.TP_Main, jsonPath='controls.json')
 
 #### Build Sliders
-TP_Slds = BuildSliders(config.TP_Main, jsonPath='controls.json')
+TP_Slds = BuildSliders(settings.TP_Main, jsonPath='controls.json')
 
 #### Build Labels
-TP_Lbls = BuildLabels(config.TP_Main, jsonPath='controls.json')
+TP_Lbls = BuildLabels(settings.TP_Main, jsonPath='controls.json')
 
 ## End Device/User Interface Definition ----------------------------------------
 ##
@@ -68,11 +68,11 @@ TP_Lbls = BuildLabels(config.TP_Main, jsonPath='controls.json')
 
 def Initialize() -> None:
     #### Set initial page & room name
-    config.TP_Main.ShowPage('Splash')
-    TP_Btns['Room-Label'].SetText(config.roomName)
+    settings.TP_Main.ShowPage('Splash')
+    TP_Btns['Room-Label'].SetText(settings.roomName)
     
     #### Build Common Use UI Dictionaries
-    config.TransitionDict = \
+    settings.TransitionDict = \
         {
             "label": TP_Lbls['PowerTransLabel-State'],
             "level": TP_Lvls['PowerTransIndicator'],
@@ -91,7 +91,7 @@ def Initialize() -> None:
               }
         }
         
-    config.SourceButtons = \
+    settings.SourceButtons = \
         {
             "select": TP_Btn_Grps['Source-Select'],
             "indicator": TP_Btn_Grps['Source-Indicator'],
@@ -101,7 +101,7 @@ def Initialize() -> None:
               ]
         }
     
-    config.PinButtons = \
+    settings.PinButtons = \
         {
             "numPad": [
                 TP_Btns['PIN-0'],
@@ -119,30 +119,30 @@ def Initialize() -> None:
             "cancel": TP_Btns['PIN-Cancel']
         }
         
-    for dest in config.destinations.values():
-        config.AdvDestinationDict[dest['id']] = \
+    for dest in settings.destinations.values():
+        settings.AdvDestinationDict[dest['id']] = \
             GetBtnsForDest(TP_Btns, dest['id'])
-        config.AdvDestinationDict[dest['id']]['label'] = \
+        settings.AdvDestinationDict[dest['id']]['label'] = \
             TP_Lbls['DispAdv-{p},{r}'.format(p = dest['adv-layout']['pos'],
                                              r = dest['adv-layout']['row'])]
     
     #### PIN Code Module
-    InitPINModule(config.TP_Main,
+    InitPINModule(settings.TP_Main,
                   TP_Btns['Header-Settings'],
-                  config.PinButtons,
+                  settings.PinButtons,
                   TP_Lbls['PIN-Label'],
-                  config.techPIN, 
+                  settings.techPIN, 
                   'Tech')
 
     #### Activity Control Module
-    config.TP_Main.ShowPopup('Menu-Activity-{}'.format(config.activityMode))
-    config.TP_Main.ShowPopup('Menu-Activity-open-{}'.format(config.activityMode))
+    settings.TP_Main.ShowPopup('Menu-Activity-{}'.format(settings.activityMode))
+    settings.TP_Main.ShowPopup('Menu-Activity-open-{}'.format(settings.activityMode))
 
     actModBtns = {"select": TP_Btn_Grps['Activity-Select'],
                   "indicator": TP_Btn_Grps['Activity-Indicator'],
                   "end": TP_Btns['Shutdown-EndNow'],
                   "cancel": TP_Btns['Shutdown-Cancel']}
-    InitActivityModule(config.TP_Main,
+    InitActivityModule(settings.TP_Main,
                        actModBtns,
                        TP_Lbls['ShutdownConf-Count'],
                        TP_Lvls['ShutdownConfIndicator'],
@@ -151,7 +151,7 @@ def Initialize() -> None:
                        SystemShutdown)
 
     #### Source Control Module
-    InitSourceModule(config.TP_Main,
+    InitSourceModule(settings.TP_Main,
                      TP_Btn_Grps['Source-Select'],
                      TP_Btn_Grps['Source-Indicator']
                      [TP_Btns['SourceMenu-Prev'], TP_Btns['SourceMenu-Next']],

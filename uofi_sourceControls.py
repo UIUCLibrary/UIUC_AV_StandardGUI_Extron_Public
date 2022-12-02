@@ -23,7 +23,7 @@ from typing import Dict, Tuple, List
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
 import utilityFunctions
-import config
+import settings
 import main
 
 #### Extron Global Scripter Modules
@@ -58,10 +58,10 @@ def InitSourceModule(UIHost: extronlib.device,
         bool: true on success and false on failure
     """
     try:
-        config.adv_share_layout = GetAdvShareLayout()
+        settings.adv_share_layout = GetAdvShareLayout()
         # iterate over advDest dictionary and initialize the labels/buttons as required
         for adv in advDest:
-            destination = config.destinations[DestIDToIndex(adv)]
+            destination = settings.destinations[DestIDToIndex(adv)]
             
             # set distination label
             advDest[adv]['label'].SetText(destination['name'])
@@ -71,8 +71,8 @@ def InitSourceModule(UIHost: extronlib.device,
             
             @event(advDest[adv]['select'], 'Pressed')
             def advSelectHandler(button, action):
-                DoSourceSwitch(config.source, adv)
-                curSource = config.sources[SourceIDToIndex(config.source)]
+                DoSourceSwitch(settings.source, adv)
+                curSource = settings.sources[SourceIDToIndex(settings.source)]
                 UpdateAdvDestButton(button, curSource)
                 
             # Source Control Buttons
@@ -87,7 +87,7 @@ def InitSourceModule(UIHost: extronlib.device,
                 pos = btnPR[0]
                 row = btnPR[1]
                 srcID = GetSourceByAdvShareLoc(pos, row)
-                curSource = config.sources[SourceIDToIndex(srcID)]
+                curSource = settings.sources[SourceIDToIndex(srcID)]
                 UIHost.ShowPopup("Modal-SrcCtl-{}"
                                  .format(curSource['adv-src-ctl']))
             
@@ -149,14 +149,14 @@ def InitSourceModule(UIHost: extronlib.device,
 
             srcList = GetCurrentSourceList()
 
-            srcIndex = btnIndex + config.sourceOffset
+            srcIndex = btnIndex + settings.sourceOffset
 
             srcID = srcList[srcIndex]['id']
-            config.source = srcID
+            settings.source = srcID
 
             # advanced share doesn't switch until destination has been selected
             # all other activities switch immediately
-            if config.activity != "adv_share": 
+            if settings.activity != "adv_share": 
                 DoSourceSwitch(srcID)         
                 UIHost.ShowPopup("Source-Control-{}"
                                  .format(srcList[srcIndex]['src-ctl']))
@@ -166,9 +166,9 @@ def InitSourceModule(UIHost: extronlib.device,
             # capture last 4 characters of button.Name
             btnAction = button.Name[-4:]
             if btnAction == "Prev":
-                config.sourceOffset -= 1
+                settings.sourceOffset -= 1
             elif btnAction == "Next":
-                config.sourceOffset += 1
+                settings.sourceOffset += 1
             UpdateSourceMenu(UIHost, sourceBtns, sourceInds, arrowBtns)
 
         return True
@@ -199,7 +199,7 @@ def UpdateSourceMenu(UIHost: extronlib.device,
         none
     """    
     
-    offset = config.sourceOffset
+    offset = settings.sourceOffset
     srcList = GetCurrentSourceList()
     
     for btn in sourceBtns.Objects:
@@ -230,7 +230,7 @@ def UpdateSourceMenu(UIHost: extronlib.device,
         UIHost.ShowPopup('Menu-Source-5+')
         
     # reset currently selected source
-    currentSourceIndex = SourceIDToIndex(config.source, srcList)
+    currentSourceIndex = SourceIDToIndex(settings.source, srcList)
     
     btnIndex = currentSourceIndex - offset
     # TODO: error handling, btnIndex should always be an int 0-4
@@ -246,13 +246,13 @@ def GetCurrentSourceList() -> List:
     srcList = []
     srcNone = {"id": "none", "name": "None", "icon": 0, "input": 0}
     
-    if config.activity == 'adv_share':
+    if settings.activity == 'adv_share':
         srcList.append(srcNone)
-    srcList.extend(config.sources)
+    srcList.extend(settings.sources)
     
     return srcList
 
-def SourceIDToIndex(id: str, srcList: List = config.sources) -> int:
+def SourceIDToIndex(id: str, srcList: List = settings.sources) -> int:
     """Get Source Index from ID. Will fail for the 'none' source if using
     config.sources.
 
@@ -274,7 +274,7 @@ def SourceIDToIndex(id: str, srcList: List = config.sources) -> int:
     ## if we get here then there was no valid index for the id
     raise LookupError("Provided ID ({}) not found".format(id))
     
-def SourceNameToIndex(name: str, srcList: List = config.sources) -> int:
+def SourceNameToIndex(name: str, srcList: List = settings.sources) -> int:
     """Get Source Index from Name. Will fail for the 'none' source if using
     config.sources.
 
@@ -296,7 +296,7 @@ def SourceNameToIndex(name: str, srcList: List = config.sources) -> int:
     ## if we get here then there was no valid index for the name
     raise LookupError("Provided name ({}) not found".format(name))
 
-def SourceNameToID(name: str, srcList: List = config.sources) -> str:
+def SourceNameToID(name: str, srcList: List = settings.sources) -> str:
     """Get Source ID from Source Name. Will fail for the 'none' source if using
     config.sources
 
@@ -318,7 +318,7 @@ def SourceNameToID(name: str, srcList: List = config.sources) -> str:
     ## if we get here then there was no valid match for the name
     raise LookupError("Provided name ({}) not found".format(name))
 
-def SourceIDToName(id: str, srcList: List = config.sources) -> str:
+def SourceIDToName(id: str, srcList: List = settings.sources) -> str:
     """Get Source Name from Source ID. Will fail for the 'none' source if using
     config.sources
 
@@ -340,7 +340,7 @@ def SourceIDToName(id: str, srcList: List = config.sources) -> str:
     ## if we get here then there was no valid match for the id and an exception should be raised
     raise LookupError("Provided ID ({}) not found".format(id))
 
-def DestIDToIndex(id: str, destList: List = config.destinations) -> int:
+def DestIDToIndex(id: str, destList: List = settings.destinations) -> int:
     """Get Destination Index from ID.
 
     Args:
@@ -362,7 +362,7 @@ def DestIDToIndex(id: str, destList: List = config.destinations) -> int:
     ## if we get here then there was no valid index for the id
     raise LookupError("Provided ID ({}) not found".format(id))
 
-def DestNameToIndex(name: str, destList: List = config.destinations) -> int:
+def DestNameToIndex(name: str, destList: List = settings.destinations) -> int:
     """Get Destination Index from Name. Will fail for the 'none' destination if
     using config.sources.
 
@@ -385,7 +385,7 @@ def DestNameToIndex(name: str, destList: List = config.destinations) -> int:
     ## if we get here then there was no valid index for the name
     raise LookupError("Provided name ({}) not found".format(name))
 
-def DestNameToID(name: str, destList: List = config.destinations) -> str:
+def DestNameToID(name: str, destList: List = settings.destinations) -> str:
     """Get Destination ID from Destination Name. Will fail for the 'none'
     destination if using config.sources
 
@@ -408,7 +408,7 @@ def DestNameToID(name: str, destList: List = config.destinations) -> str:
     ## if we get here then there was no valid match for the name
     raise LookupError("Provided name ({}) not found".format(name))
 
-def DestIDToName(id: str, destList: List = config.destinations) -> str:
+def DestIDToName(id: str, destList: List = settings.destinations) -> str:
     """Get Destination Name from Destination ID. Will fail for the 'none'
     destination if using config.sources
 
@@ -451,7 +451,7 @@ def GetBtnsForDest(btnDict: Dict[extronlib.ui.Button],
     
     destDict = {}
     
-    for dest in config.destinations.values():
+    for dest in settings.destinations.values():
         if dest['id'] == destID:
             pos = dest['adv-layout']['pos']
             row = dest['adv-layout']['row']
@@ -473,7 +473,7 @@ def GetBtnsForDest(btnDict: Dict[extronlib.ui.Button],
     except:
         raise KeyError("At least one destination button not found.".format(id))
 
-def GetAdvShareLayout(dest: List = config.destinations) -> str:
+def GetAdvShareLayout(dest: List = settings.destinations) -> str:
     layout = {}
     for d in dest:
         r = str(dest[d]['adv-layout']['row'])
@@ -494,7 +494,7 @@ def UpdateAdvDestButton(btn: extronlib.ui.Button,
                         ctlBtn: extronlib.ui.Button,
                         curSource: str) -> None:
     btn.SetText(curSource['name'])
-    # TODO: show and enable source controls if needed
+    
     if curSource['adv-src-ctl'] == None:
         ctlBtn.SetVisible(False)
         ctlBtn.Enabled(False)
@@ -516,7 +516,7 @@ def GetSourceByAdvShareLoc(pos: int, row: int) -> str:
         str: The string ID of the source at the advanced sharing
             location provided
     """    
-    for dest in config.destinations:
+    for dest in settings.destinations:
         if dest['adv-layout']['pos'] == pos \
         and dest['adv-layout']['row'] == row:
             srcID = GetSourceByDestination(dest['id'])
@@ -535,13 +535,22 @@ def GetSourceByDestination(dest: str) -> str:
     Returns:
         str: The string ID of the source sent to the provided destination
     """    
-    src = ''
-    # TODO: build source to destination lookup functionality
+    
     # get switcher output from config.destinations for provided dest
+    swDest = settings.destinations[DestIDToIndex(dest)]['output']
+    
     # get tied input for dest output
-    # iterate over config.source to match switcher input to source
-    # reteurn source id string
-    return src
+    #### TODO: query the switcher for input tied to swDest store as swSrc
+    swSrc = None
+    
+    # iterate over settings.sources to match switcher input to source
+    for src in settings.sources:
+        if swSrc == src['input']:
+            # return source id string
+            return src['id']
+    
+    raise LookupError("Source for destination ({}) could not be found"
+                      .format(dest))
 
 def SwitchSources(src: str, dest: str = 'all') -> bool:
     """Switch system sources

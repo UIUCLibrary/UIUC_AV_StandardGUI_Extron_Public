@@ -22,7 +22,7 @@ from typing import Dict, Tuple, List, Union
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
 import utilityFunctions
-import config
+import settings
 
 #### Extron Global Scripter Modules
 

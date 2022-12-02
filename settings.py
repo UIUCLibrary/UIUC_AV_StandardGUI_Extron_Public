@@ -3,6 +3,9 @@
 
 roomName = 'Test Room'        # Room Name - update for each project
 activityMode = 3              # Activity mode popup to display
+   # 1 - Share only
+   # 2 - Share & Advanced Share
+   # 3 - Share, Adv. Share, and Group Work
 startupTimer = 10             # Max startup timer duration
 switchTimer = 20              # Max switch timer duration
 shutdownTimer = 30,           # Max shutdown timer duration
@@ -96,6 +99,7 @@ destinations = \
          "name": "North Monitor",
          "output": 2,
          "type": "mon",
+         "rly": None,
          "group-work-src": "WPD002",
          "adv-layout": {
             "row": 1,
@@ -107,6 +111,7 @@ destinations = \
          "name": "South Monitor",
          "output": 4,
          "type": "mon",
+         "rly": None,
          "group-work-src": "WPD003",
          "adv-layout": {
             "row": 1,
@@ -145,6 +150,37 @@ activityDict = \
       "group_work": "Group Work"
    }
 adv_share_layout = None
+
+ModalPageList = \
+   [
+      "Modal-Scheduler",
+      "Modal-ScnCtl",
+      "Modal-SrcCtl-Camera",
+      "Modal-SrcCtl-WPD",
+      "Modal-SrcErr"
+   ]
+PopoverPageList = \
+   [
+      "Popover-Ctl-Alert",
+      "Popover-Ctl-Audio_1",
+      "Popover-Ctl-Camera_0",
+      "Popover-Ctl-Camera_1",
+      "Popover-Ctl-Camera_2",
+      "Popover-Ctl-Help",
+      "Popover-Ctl-Lights_0",
+      "Popover-Room"
+   ]
+PopupGroupList = \
+   [
+      "Tech-Popups",
+      "Tech-Menus",
+      "Activity-Menus",
+      "Activity-Open-Menus",
+      "Source-Menus",
+      "Source-Controls",
+      "Audio-Controls",
+      "Activity-Controls"
+   ]
 
 CtlProc_Main = None
 TP_Main = None
