@@ -22,6 +22,7 @@ from typing import Dict, Tuple, List
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
 import utilityFunctions
+import uofi_sourceControls
 import config
 
 #### Extron Global Scripter Modules
@@ -125,6 +126,158 @@ def InitActivityModule(UIHost: extronlib.device,
         ProgramLog(execptStr, 'warning')
         ## return false (error)
         return False
+
+def SystemStart(activity: str) -> None:
+    startupTime = config.startupTimer
+
+    config.TransitionDict['label'].SetText('System is switching on. Please Wait...')
+    config.TransitionDict['level'].SetRange(0, startupTime, 1)
+    config.TransitionDict['level'].SetLevel(0)
+
+    config.TP_Main.ShowPopup('Power-Transition')
+    config.TP_Main.ShowPage('Main')
+
+    @Timer(1)
+    def StartUpTimerHandler(timer, count):
+        timeRemaining = startupTime - count
+
+        config.TransitionDict['count'].SetText(utilityFunctions.TimeIntToStr(timeRemaining))
+        config.TransitionDict['level'].SetLevel(count)
+
+        # TIME SYNCED SWITCH ITEMS HERE - function in main
+        config.TransitionDict['start']['sync'](count)
+
+        # feedback can be used here to jump out of the startup process early
+
+        if count >= startupTime:
+            timer.Stop()
+            print('System started in {} mode'.format(activity))
+            ProgramLog('System started in {} mode'.format(activity), 'info')
+            SystemSwitch(activity)
+
+    # STARTUP ONLY ITEMS HERE - function in main
+    config.TransitionDict['start']['init']()
+    
+    # TODO: assign default source to all destinations
+            
+def SwitchTimerHandler(timer, count):
+    timeRemaining = config.switchTimer - count
+
+    config.TransitionDict['count'].SetText(utilityFunctions.TimeIntToStr(timeRemaining))
+    config.TransitionDict['level'].SetLevel(count)
+
+    # TIME SYNCED SWITCH ITEMS HERE - function in Main
+    config.TransitionDict['switch']['sync'](count)
+
+    # feedback can be used here to jump out of the switch process early
+
+    if count >= config.switchTimer:
+        timer.Stop()
+        config.TP_Main.HidePopup('Power-Transition')
+        print('System configured in {} mode'.format(config.activity))
+        ProgramLog('System configured in {} mode'.format(config.activity), 'info')
+        
+systemSwitchTimer = Timer(1, SwitchTimerHandler)
+systemSwitchTimer.Pause()
+
+@event(systemSwitchTimer, 'StateChanged')        
+def SwitchTimerStateHandler(timer, state):
+    if state == 'Stopped':
+        if config.activity == 'share' or config.activity == 'group-work':
+            @Wait(config.activitySplash) 
+            def activitySplash():
+                src = config.sources[uofi_sourceControls.SourceIDToIndex(config.source)]
+                popup = "Source-Control-{}".format(src['src-ctl'])
+                if src['src-ctl'] == 'PC':
+                    popup = popup + "_{}".format(len(config.cameras))
+                config.TP_Main.ShowPopup(popup)
+
+def SystemSwitch(activity) -> None:
+    config.TransitionDict['label'].SetText('System is switching to {} mode. Please Wait...'
+                                             .format(config.activityDict[activity]))
+    config.TransitionDict['level'].SetRange(0, config.switchTimer, 1)
+    config.TransitionDict['level'].SetLevel(0)
+
+    config.TP_Main.ShowPopup('Power-Transition')
+    config.TP_Main.ShowPage('Main')
+
+    config.activity = activity
+    systemSwitchTimer.Restart()
+
+    # configure system for current activity
+    config.TP_Main.HidePopupGroup('Source-Controls')
+    if activity == "share":
+        config.TP_Main.HidePopupGroup('Activity-Controls')
+        # get input assigned to the primaryDestination
+        curSrc = uofi_sourceControls.GetSourceByDestination(config.primaryDestination)
+        
+        # update source selection to match primaryDestination
+        for dest in config.destinations:
+            if uofi_sourceControls.GetSourceByDestination(dest['id']) != curSrc:
+                uofi_sourceControls.SwitchSources(curSrc, dest['id'])
+        
+        config.TP_Main.ShowPopup("Audio-Control-{},P".format(config.micCtl))
+        
+        # show activity splash screen, will be updated config.activitySplash seconds after the activity switch timer stops
+        config.TP_Main.ShowPopup("Source-Control-Splash-Share")
+        
+    elif activity == "adv_share":
+        config.TP_Main.ShowPopup("Activity-Control-AdvShare")
+        config.TP_Main.ShowPopup(config.adv_share_layout)
+        # TODO: get inputs assigned to destination outputs, update destination buttons for these assignments
+        config.TP_Main.ShowPopup("Audio-Control-{}".format(config.micCtl))
+    elif  activity == "group_work":
+        config.TP_Main.ShowPopup("Activity-Control-Group")
+        config.TP_Main.ShowPopup("Audio-Control-{},P".format(config.micCtl))
+        for dest in config.destinations:
+            uofi_sourceControls.SwitchSources(dest['group-work-src'], dest['id'])
+        
+    srcList = uofi_sourceControls.GetCurrentSourceList()
+    curSrcIndex = uofi_sourceControls.SourceIDToIndex(config.source, srcList)
+    
+    if len(srcList) > 5: # if the srcList is paginated, shift offset to make selected source visible
+        if curSrcIndex < config.sourceOffset:
+            config.sourceOffset -= (config.sourceOffset - curSrcIndex)
+        elif curSrcIndex >= (config.sourceOffset + 5):
+            config.sourceOffset = curSrcIndex - 4
+            
+    
+    uofi_sourceControls.UpdateSourceMenu(config.TP_Main,
+                     config.SourceButtons['select'],
+                     config.SourceButtons['indicator'],
+                     config.SourceButtons['arrows'])
+
+def SystemShutdown() -> None:
+    shutdownTime = config.shutdownTimer
+    config.activity = 'off'
+
+    config.TransitionDict['label'].SetText('System is switching off. Please Wait...')
+    config.TransitionDict['level'].SetRange(0, shutdownTime, 1)
+    config.TransitionDict['level'].SetLevel(0)
+    
+    config.TP_Main.ShowPopup('Power-Transition')
+    config.TP_Main.ShowPage('Opening')
+
+    @Timer(1)
+    def ShutdownTimerHandler(timer, count):
+        timeRemaining = shutdownTime - count
+
+        config.TransitionDict['count'].SetText(utilityFunctions.TimeIntToStr(timeRemaining))
+        config.TransitionDict['level'].SetLevel(count)
+
+        # TIME SYNCED SHUTDOWN ITEMS HERE - function in main
+        config.TransitionDict['shutdown']['sync'](count)
+
+        # feedback can be used here to jump out of the shutdown process early
+
+        if count >= shutdownTime:
+            timer.Stop()
+            config.TP_Main.HidePopup('Power-Transition')
+            print('System shutdown')
+            ProgramLog('System shutdown', 'info')
+    
+    # SHUTDOWN ITEMS HERE - function in main
+    config.TransitionDict['shutdown']['init']()
 
 ## End Function Definitions ----------------------------------------------------
 ##
