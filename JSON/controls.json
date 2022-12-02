@@ -475,6 +475,18 @@
           "repeatTime": null
         },
         {
+          "Name": "Popover-Close",
+          "ID": 11998,
+          "holdTime": null,
+          "repeatTime": null
+        },
+        {
+          "Name": "Splash",
+          "ID": 11999,
+          "holdTime": null,
+          "repeatTime": null
+        },
+        {
           "Name": "Tech-Exit",
           "ID": 12000,
           "holdTime": null,
@@ -1515,15 +1527,15 @@
       ],
     "buttonGroups": [
         {
-          "name":"Camera-Select",
-          "buttons":[
+          "Name":"Camera-Select",
+          "Buttons":[
             "Ctl-Camera-Select-CAM001",
             "Ctl-Camera-Select-CAM002"
           ]
         },
         {
-          "name":"Source-Select",
-          "buttons":[
+          "Name":"Source-Select",
+          "Buttons":[
             "Source-1",
             "Source-2",
             "Source-3",
@@ -1532,8 +1544,8 @@
           ]
         },
         {
-          "name":"Source-Indicator",
-          "buttons":[
+          "Name":"Source-Indicator",
+          "Buttons":[
             "SourceIndicator-1",
             "SourceIndicator-2",
             "SourceIndicator-3",
@@ -1542,8 +1554,8 @@
           ]
         },
         {
-          "name":"Activity-Select",
-          "buttons":[
+          "Name":"Activity-Select",
+          "Buttons":[
             "ActivitySelect-Off",
             "ActivitySelect-Share",
             "ActivitySelect-AdvShare",
@@ -1551,8 +1563,8 @@
           ]
         },
         {
-          "name":"Activity-Indicator",
-          "buttons":[
+          "Name":"Activity-Indicator",
+          "Buttons":[
             "ActivityIndicator-Off",
             "ActivityIndicator-Share",
             "ActivityIndicator-AdvShare",
