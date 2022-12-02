@@ -73,15 +73,36 @@ def TimeIntToStr(time: int, units: bool = True) -> str:
         if days == 1:
             uD = 'day'
         if days != 0:
-            returnStr = "{d} {unitD}, {hr} {unitH}, {min} {unitM}, {sec} {unitS}".format(d=days, unitD=uD, hr=hours, unitH=uH, min=minutes, unitM=uM, sec=seconds, unitS=uS)
+            returnStr = "{d} {unitD}, {hr} {unitH}, {min} {unitM}, {sec} {unitS}"\
+                .format(d=days,
+                        unitD=uD,
+                        hr=hours,
+                        unitH=uH,
+                        min=minutes,
+                        unitM=uM,
+                        sec=seconds,
+                        unitS=uS)
         elif days == 0 and hours != 0:
-            returnStr = "{hr} {unitH}, {min} {unitM}, {sec} {unitS}".format(hr=hours, unitH=uH, min=minutes, unitM=uM, sec=seconds, unitS=uS)
+            returnStr = "{hr} {unitH}, {min} {unitM}, {sec} {unitS}"\
+                .format(hr=hours,
+                        unitH=uH,
+                        min=minutes,
+                        unitM=uM,
+                        sec=seconds,
+                        unitS=uS)
         elif days == 0 and hours == 0 and minutes != 0:
-            returnStr = "{min} {unitM}, {sec} {unitS}".format(min=minutes, unitM=uM, sec=seconds, unitS=uS)
+            returnStr = "{min} {unitM}, {sec} {unitS}"\
+                .format(min=minutes,
+                        unitM=uM,
+                        sec=seconds,
+                        unitS=uS)
         elif days == 0 and hours == 0 and minutes == 0:
             returnStr = "{sec} {unitS}".format(sec=seconds, unitS=uS)
     else:
-        returnStr = "{d}:{hr}:{min}:{sec}".format(d=days, hr=str(hours).zfill(2), min=str(minutes).zfill(2), sec=str(seconds).zfill(2))
+        returnStr = "{d}:{hr}:{min}:{sec}".format(d=days,
+                                                  hr=str(hours).zfill(2),
+                                                  min=str(minutes).zfill(2),
+                                                  sec=str(seconds).zfill(2))
 
     return returnStr
 

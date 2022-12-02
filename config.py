@@ -150,6 +150,7 @@ CtlProc_Main = None
 TP_Main = None
 TransitionDict = {}
 SourceButtons = {}
+AdvDestinationDict = {}
 PinButtons = {}
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

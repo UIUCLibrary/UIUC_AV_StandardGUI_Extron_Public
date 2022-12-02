@@ -118,6 +118,13 @@ def Initialize() -> None:
             "backspace": TP_Btns['PIN-Del'],
             "cancel": TP_Btns['PIN-Cancel']
         }
+        
+    for dest in config.destinations.values():
+        config.AdvDestinationDict[dest['id']] = \
+            GetBtnsForDest(TP_Btns, dest['id'])
+        config.AdvDestinationDict[dest['id']]['label'] = \
+            TP_Lbls['DispAdv-{p},{r}'.format(p = dest['adv-layout']['pos'],
+                                             r = dest['adv-layout']['row'])]
     
     #### PIN Code Module
     InitPINModule(config.TP_Main,
@@ -144,11 +151,6 @@ def Initialize() -> None:
                        SystemShutdown)
 
     #### Source Control Module
-    advDestDict = {}
-    for dest in config.destinations.values():
-        advDestDict[dest['id']] = GetBtnsForDest(TP_Btns, dest['id'])
-        advDestDict[dest['id']]['label'] = TP_Lbls['DispAdv-{p},{r}'.format(p = dest['adv-layout']['pos'], r = dest['adv-layout']['row'])]
-    
     InitSourceModule(config.TP_Main,
                      TP_Btn_Grps['Source-Select'],
                      TP_Btn_Grps['Source-Indicator']

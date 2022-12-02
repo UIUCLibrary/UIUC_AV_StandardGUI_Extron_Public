@@ -61,12 +61,31 @@ def InitPINModule(UIHost: extronlib.device,
 
     Args:
         UIHost (extronlib.device): UIHost to which the buttons are assigned
-        startBtn (extronlib.ui.Button): the button object which triggers the pin code module
-        pinBtns (Dict[List[extronlib.ui.Button], extronlib.ui.Button, extronlib.ui.Button]): dictionary containing pin page buttons such as:
-            {"numPad": [TP_Btns['PIN-0'], TP_Btns['PIN-1'], TP_Btns['PIN-2'], TP_Btns['PIN-3'], TP_Btns['PIN-4'], TP_Btns['PIN-5'], TP_Btns['PIN-6'], TP_Btns['PIN-7'], TP_Btns['PIN-8'], TP_Btns['PIN-9']],
+        startBtn (extronlib.ui.Button): the button object which triggers the pin
+            code module
+        pinBtns (Dict[List[extronlib.ui.Button],
+                      extronlib.ui.Button,
+                      extronlib.ui.Button]): dictionary containing pin page
+            buttons such as:
+            {
+                "numPad":
+                    [
+                        TP_Btns['PIN-0'],
+                        TP_Btns['PIN-1'],
+                        TP_Btns['PIN-2'],
+                        TP_Btns['PIN-3'],
+                        TP_Btns['PIN-4'],
+                        TP_Btns['PIN-5'],
+                        TP_Btns['PIN-6'], 
+                        TP_Btns['PIN-7'],
+                        TP_Btns['PIN-8'],
+                        TP_Btns['PIN-9']
+                    ],
              "backspace": TP_Btns['PIN-Del'],
-             "cancel": TP_Btns['PIN-Cancel']}
-        pinLbl (extronlib.ui.Label): the label object which will contain masked user feedback
+             "cancel": TP_Btns['PIN-Cancel']
+            }
+        pinLbl (extronlib.ui.Label): the label object which will contain masked
+            user feedback
         pinCode (str): the master pin value to match against
         destPage (str): the page to show on successful pin auth
 

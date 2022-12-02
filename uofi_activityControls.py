@@ -46,7 +46,9 @@ def InitActivityModule(UIHost: extronlib.device,
     
     Args:
         UIHost (extronlib.device): UIHost to which the buttons are assigned
-        activityBtns (Dict[extronlib.system.MESet, extronlib.system.MESet, extronlib.ui.Button, extronlib.ui.Button]): a dictionary of activity buttons. Should contain the following keys/value pairs:
+        activityBtns (Dict[extronlib.system.MESet, extronlib.system.MESet,
+          extronlib.ui.Button, extronlib.ui.Button]): a dictionary of activity
+          buttons. Should contain the following keys/value pairs:
             select: MESet of selection buttons
             indicator: MESet of indicator buttons
             end: Shutdown Confirmation End Now button
@@ -54,8 +56,10 @@ def InitActivityModule(UIHost: extronlib.device,
         confTimeLbl (extronlib.ui.Label): Shutdown confirmation text label
         confTimeLvl (extronlib.ui.Level): Shutdown confirmation level indicator
         DoSystemStart (function): System start function, receives no arguments
-        DoSystemSwitch (function): System activity switch function, receives no arguments
-        DoSystemShutdown (function): System shutdown function, receives no arguments
+        DoSystemSwitch (function): System activity switch function,
+          receives no arguments
+        DoSystemShutdown (function): System shutdown function,
+          receives no arguments
 
     Returns:
         bool: True on success or False on failure
@@ -130,7 +134,8 @@ def InitActivityModule(UIHost: extronlib.device,
 def SystemStart(activity: str) -> None:
     startupTime = config.startupTimer
 
-    config.TransitionDict['label'].SetText('System is switching on. Please Wait...')
+    config.TransitionDict['label'].SetText(
+        'System is switching on. Please Wait...')
     config.TransitionDict['level'].SetRange(0, startupTime, 1)
     config.TransitionDict['level'].SetLevel(0)
 
@@ -141,7 +146,8 @@ def SystemStart(activity: str) -> None:
     def StartUpTimerHandler(timer, count):
         timeRemaining = startupTime - count
 
-        config.TransitionDict['count'].SetText(utilityFunctions.TimeIntToStr(timeRemaining))
+        config.TransitionDict['count'].SetText(
+            utilityFunctions.TimeIntToStr(timeRemaining))
         config.TransitionDict['level'].SetLevel(count)
 
         # TIME SYNCED SWITCH ITEMS HERE - function in main
@@ -163,7 +169,8 @@ def SystemStart(activity: str) -> None:
 def SwitchTimerHandler(timer, count):
     timeRemaining = config.switchTimer - count
 
-    config.TransitionDict['count'].SetText(utilityFunctions.TimeIntToStr(timeRemaining))
+    config.TransitionDict['count'].SetText(
+        utilityFunctions.TimeIntToStr(timeRemaining))
     config.TransitionDict['level'].SetLevel(count)
 
     # TIME SYNCED SWITCH ITEMS HERE - function in Main
@@ -175,7 +182,8 @@ def SwitchTimerHandler(timer, count):
         timer.Stop()
         config.TP_Main.HidePopup('Power-Transition')
         print('System configured in {} mode'.format(config.activity))
-        ProgramLog('System configured in {} mode'.format(config.activity), 'info')
+        ProgramLog('System configured in {} mode'.format(config.activity),
+                   'info')
         
 systemSwitchTimer = Timer(1, SwitchTimerHandler)
 systemSwitchTimer.Pause()
@@ -186,15 +194,17 @@ def SwitchTimerStateHandler(timer, state):
         if config.activity == 'share' or config.activity == 'group-work':
             @Wait(config.activitySplash) 
             def activitySplash():
-                src = config.sources[uofi_sourceControls.SourceIDToIndex(config.source)]
+                src = config.sources[
+                    uofi_sourceControls.SourceIDToIndex(config.source)]
                 popup = "Source-Control-{}".format(src['src-ctl'])
                 if src['src-ctl'] == 'PC':
                     popup = popup + "_{}".format(len(config.cameras))
                 config.TP_Main.ShowPopup(popup)
 
 def SystemSwitch(activity) -> None:
-    config.TransitionDict['label'].SetText('System is switching to {} mode. Please Wait...'
-                                             .format(config.activityDict[activity]))
+    config.TransitionDict['label'].SetText(
+        'System is switching to {} mode. Please Wait...'
+        .format(config.activityDict[activity]))
     config.TransitionDict['level'].SetRange(0, config.switchTimer, 1)
     config.TransitionDict['level'].SetLevel(0)
 
@@ -209,7 +219,8 @@ def SystemSwitch(activity) -> None:
     if activity == "share":
         config.TP_Main.HidePopupGroup('Activity-Controls')
         # get input assigned to the primaryDestination
-        curSrc = uofi_sourceControls.GetSourceByDestination(config.primaryDestination)
+        curSrc = \
+            uofi_sourceControls.GetSourceByDestination(config.primaryDestination)
         
         # update source selection to match primaryDestination
         for dest in config.destinations:
@@ -218,13 +229,15 @@ def SystemSwitch(activity) -> None:
         
         config.TP_Main.ShowPopup("Audio-Control-{},P".format(config.micCtl))
         
-        # show activity splash screen, will be updated config.activitySplash seconds after the activity switch timer stops
+        # show activity splash screen, will be updated config.activitySplash
+        # seconds after the activity switch timer stops
         config.TP_Main.ShowPopup("Source-Control-Splash-Share")
         
     elif activity == "adv_share":
         config.TP_Main.ShowPopup("Activity-Control-AdvShare")
         config.TP_Main.ShowPopup(config.adv_share_layout)
-        # TODO: get inputs assigned to destination outputs, update destination buttons for these assignments
+        # TODO: get inputs assigned to destination outputs, update destination
+        # buttons for these assignments
         config.TP_Main.ShowPopup("Audio-Control-{}".format(config.micCtl))
     elif  activity == "group_work":
         config.TP_Main.ShowPopup("Activity-Control-Group")
@@ -235,7 +248,8 @@ def SystemSwitch(activity) -> None:
     srcList = uofi_sourceControls.GetCurrentSourceList()
     curSrcIndex = uofi_sourceControls.SourceIDToIndex(config.source, srcList)
     
-    if len(srcList) > 5: # if the srcList is paginated, shift offset to make selected source visible
+    # if the srcList is paginated, shift offset to make selected source visible
+    if len(srcList) > 5: 
         if curSrcIndex < config.sourceOffset:
             config.sourceOffset -= (config.sourceOffset - curSrcIndex)
         elif curSrcIndex >= (config.sourceOffset + 5):
@@ -251,7 +265,8 @@ def SystemShutdown() -> None:
     shutdownTime = config.shutdownTimer
     config.activity = 'off'
 
-    config.TransitionDict['label'].SetText('System is switching off. Please Wait...')
+    config.TransitionDict['label']\
+        .SetText('System is switching off. Please Wait...')
     config.TransitionDict['level'].SetRange(0, shutdownTime, 1)
     config.TransitionDict['level'].SetLevel(0)
     
@@ -262,7 +277,8 @@ def SystemShutdown() -> None:
     def ShutdownTimerHandler(timer, count):
         timeRemaining = shutdownTime - count
 
-        config.TransitionDict['count'].SetText(utilityFunctions.TimeIntToStr(timeRemaining))
+        config.TransitionDict['count']\
+            .SetText(utilityFunctions.TimeIntToStr(timeRemaining))
         config.TransitionDict['level'].SetLevel(count)
 
         # TIME SYNCED SHUTDOWN ITEMS HERE - function in main
