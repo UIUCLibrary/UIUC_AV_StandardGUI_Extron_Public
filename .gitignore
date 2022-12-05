@@ -1,2 +1,3 @@
 # inore vscode settings
 .vscode/
+__pycache__/
