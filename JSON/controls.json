@@ -1570,6 +1570,15 @@
             "ActivityIndicator-AdvShare",
             "ActivityIndicator-GroupWork"
           ]
+        },
+        {
+          "Name":"Tech-Matrix-Mode",
+          "Buttons":[
+            "Tech-Matrix-Mode-AV",
+            "Tech-Matrix-Mode-Aud",
+            "Tech-Matrix-Mode-Vid",
+            "Tech-Matrix-Mode-Untie"
+          ]
         }
     ],
     "knobs":[],

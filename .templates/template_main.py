@@ -27,7 +27,7 @@ from uofi_pinCode import *
 from uofi_sourceControls import *
 
 import utilityFunctions
-import config
+import settings
 
 #### Extron Global Scripter Modules
 

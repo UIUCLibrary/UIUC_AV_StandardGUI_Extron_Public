@@ -17,6 +17,7 @@ print(Version()) ## Sanity check ControlScript Import
 from datetime import datetime
 from json import json
 from typing import Dict, Tuple, List
+import re
 
 ## End Python Imports ----------------------------------------------------------
 ##
@@ -30,6 +31,32 @@ import settings
 ## End User Import -------------------------------------------------------------
 ##
 ## Begin Function Definitions --------------------------------------------------
+
+matrix_mode = 'AV'
+
+def InitManualMatrix(UIHost: extronlib.device,
+                     matrixBtns: Dict,
+                     matrixCtls: Dict):
+    
+    @event(matrixBtns, 'Pressed')
+    def matrixSelectHandler(button, action):
+        regex = r"Tech-Matrix-(\d+),(\d+)"
+        re_match = re.match(regex, button.Name)
+        # 0 is full match, 1 is input, 2 is output
+        input = re_match[1]
+        output = re_match[2]
+        
+        # TODO: figure out 
+        if matrix_mode == "untie":
+            pass
+        elif matrix_mode == "AV":
+            pass
+        elif matrix_mode == "Aud":
+            pass
+        elif matrix_mode == "Vid":
+            pass
+    pass
+    
 
 ## End Function Definitions ----------------------------------------------------
 ##
