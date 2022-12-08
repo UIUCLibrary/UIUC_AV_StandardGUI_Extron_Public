@@ -15,7 +15,7 @@ print(Version()) ## Sanity check ControlScript Import
 ##
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
-from json import json
+import json
 ## End Python Imports ----------------------------------------------------------
 ##
 ## Begin User Import -----------------------------------------------------------
@@ -71,7 +71,7 @@ def Initialize() -> None:
     settings.TP_Main.ShowPage('Splash')
     TP_Btns['Room-Label'].SetText(settings.roomName)
     
-    #### Build Common Use UI Dictionaries
+    #### Build Common Use UI Dictionaries ======================================
     settings.TransitionDict = \
         {
             "label": TP_Lbls['PowerTransLabel-State'],
@@ -126,6 +126,8 @@ def Initialize() -> None:
             TP_Lbls['DispAdv-{p},{r}'.format(p = dest['adv-layout']['pos'],
                                              r = dest['adv-layout']['row'])]
     
+    #### =======================================================================
+    
     #### PIN Code Module
     InitPINModule(settings.TP_Main,
                   TP_Btns['Header-Settings'],
@@ -155,7 +157,7 @@ def Initialize() -> None:
                      TP_Btn_Grps['Source-Select'],
                      TP_Btn_Grps['Source-Indicator']
                      [TP_Btns['SourceMenu-Prev'], TP_Btns['SourceMenu-Next']],
-                     advDestDict,
+                     settings.AdvDestinationDict,
                      SwitchSources)
     
     ## DO ADDITIONAL INITIALIZATION ITEMS HERE

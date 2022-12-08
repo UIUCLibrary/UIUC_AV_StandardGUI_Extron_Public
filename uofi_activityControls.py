@@ -15,7 +15,7 @@ print(Version()) ## Sanity check ControlScript Import
 ##
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
-from json import json
+import json
 from typing import Dict, Tuple, List
 ## End Python Imports ----------------------------------------------------------
 ##
@@ -31,13 +31,10 @@ import settings
 ##
 ## Begin Function Definitions --------------------------------------------------
 
-def InitActivityModule(UIHost: extronlib.device,
-                       activityBtns: Dict[extronlib.system.MESet,
-                                          extronlib.system.MESet,
-                                          extronlib.ui.Button,
-                                          extronlib.ui.Button],
-                       confTimeLbl: extronlib.ui.Label,
-                       confTimeLvl: extronlib.ui.Level,
+def InitActivityModule(UIHost: UIDevice,
+                       activityBtns: Dict[MESet, MESet, Button, Button],
+                       confTimeLbl: Label,
+                       confTimeLvl: Level,
                        DoSystemStart: function,
                        DoSystemSwitch: function,
                        DoSystemShutdown: function) -> bool:

@@ -13,7 +13,9 @@ shutdownConfTimer = 30        # Shutdown confirmation duration
 activitySplash = 15           # Duration to show activity splash pages for
 defaultSource = "PC001"       # Default source id on activity switch
 primaryDestination = "PRJ001" # Primary destination
-micCtl = 1                    # Microphone control: 0 - no mic control, 1 - mic control
+micCtl = 1                    # Microphone control
+   # 0 - no mic control
+   # 1 - mic control
 
 # Icon Map
 #     0 - no source

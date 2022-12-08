@@ -34,7 +34,7 @@ import settings
 
 matrix_mode = 'AV'
 
-def InitManualMatrix(UIHost: extronlib.device,
+def InitManualMatrix(UIHost: UIDevice,
                      matrixBtns: Dict,
                      matrixCtls: Dict):
     
@@ -43,8 +43,8 @@ def InitManualMatrix(UIHost: extronlib.device,
         regex = r"Tech-Matrix-(\d+),(\d+)"
         re_match = re.match(regex, button.Name)
         # 0 is full match, 1 is input, 2 is output
-        input = re_match[1]
-        output = re_match[2]
+        input = re_match.group(1)
+        output = re_match.group(2)
         
         # TODO: figure out 
         if matrix_mode == "untie":

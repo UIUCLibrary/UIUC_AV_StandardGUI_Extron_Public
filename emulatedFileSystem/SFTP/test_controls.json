@@ -1,0 +1,34 @@
+{
+    "buttons": [
+        {
+          "Name": "Disp-Select-0,0",
+          "ID": 6001,
+          "holdTime": null,
+          "repeatTime": null
+        },
+        {
+          "Name": "Disp-Ctl-0,0",
+          "ID": 6002,
+          "holdTime": null,
+          "repeatTime": null
+        },
+        {
+          "Name": "Disp-Aud-0,0",
+          "ID": 6003,
+          "holdTime": null,
+          "repeatTime": null
+        },
+        {
+          "Name": "Disp-Scn-0,0",
+          "ID": 6004,
+          "holdTime": null,
+          "repeatTime": null
+        },
+        {
+          "Name": "Disp-Alert-0,0",
+          "ID": 6005,
+          "holdTime": null,
+          "repeatTime": null
+        }
+    ]
+}

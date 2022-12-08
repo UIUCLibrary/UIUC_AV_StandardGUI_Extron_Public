@@ -15,7 +15,7 @@ print(Version()) ## Sanity check ControlScript Import
 ##
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
-from json import json
+import json
 from typing import Dict, Tuple, List, Union
 ## End Python Imports ----------------------------------------------------------
 ##
@@ -31,9 +31,9 @@ import settings
 ## Begin Function Definitions --------------------------------------------------
 
 
-def BuildButtons(UIHost: extronlib.device,
+def BuildButtons(UIHost: UIDevice,
                  jsonObj: Dict = {},
-                 jsonPath: str = "") -> Union[Dict, None]:
+                 jsonPath: str = "") -> Dict:
     """Builds a dictionary of Extron Buttons from a json object or file
 
     Args (only one json arg required, jsonObj takes precedence over jsonPath):
@@ -44,14 +44,17 @@ def BuildButtons(UIHost: extronlib.device,
             button information. Defaults to "".
 
     Returns:
-        Dict|None: Returns dictionary object of buttons on success or none on
-            failure
+        Dict: Returns dictionary object of buttons on success
     """    
+    if type(UIHost) != UIDevice:
+        raise TypeError('UIHost must be an extronlib.device.UIDevice object')
     
     ## do not expect both jsonObj and jsonPath
     ## jsonObj should take priority over jsonPath
     btnDict = {}
-    
+    print('Building Buttons')
+    print(jsonObj)
+    print(jsonPath)
     if jsonObj == {} and jsonPath != "": # jsonObj is empty and jsonPath not blank
         if File.Exists(jsonPath): # jsonPath is valid, so load jsonObj from path
             jsonFile = File(jsonPath)
@@ -59,35 +62,38 @@ def BuildButtons(UIHost: extronlib.device,
             jsonFile.close()
             jsonObj = json.loads(jsonStr)
         else: ## jsonPath was invalid, so return none (error)
-            return None
+            raise ValueError('Specified file does not exist')
+    elif jsonObj == {} and jsonPath == "":
+        raise ValueError('Either jsonObj or jsonPath must be specified')
+    
 
     
-    try:
-        ## format button info into btnDict
-        for button in jsonObj['buttons'].values():
-            ## only sets holdTime or repeatTime for non null/None values
-            if button['holdTime'] == None and button['repeatTime'] == None:
-                btnDict[button['Name']] = Button(UIHost, button['ID'])
-            elif button['holdTime'] != None and button['repeatTime'] == None:
-                btnDict[button['Name']] = Button(UIHost, button['ID'],
-                                                 holdTime = button['holdTime'])
-            elif button['holdTime'] == None and button['repeatTime'] != None:
-                btnDict[button['Name']] = Button(UIHost, button['ID'], 
-                                                 repeatTime = button['repeatTime'])
-            elif button['holdTime'] != None and button['repeatTime'] != None:
-                btnDict[button['Name']] = Button(UIHost, button['ID'],
-                                                 holdTime = button['holdTime'],
-                                                 repeatTime = button['repeatTime'])
-        
-        ## return btnDict
-        return btnDict
-    except Exception as inst: 
-        ## catch exceptions which may occure from misformated or missing data
-        ## log execption data to program log
-        execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-        ProgramLog(execptStr, 'warning')
-        ## return none (error)
-        return None
+    # try:
+    ## format button info into btnDict
+    for button in jsonObj['buttons']:
+        ## only sets holdTime or repeatTime for non null/None values
+        if button['holdTime'] == None and button['repeatTime'] == None:
+            btnDict[button['Name']] = Button(UIHost, button['ID'])
+        elif button['holdTime'] != None and button['repeatTime'] == None:
+            btnDict[button['Name']] = Button(UIHost, button['ID'],
+                                                holdTime = button['holdTime'])
+        elif button['holdTime'] == None and button['repeatTime'] != None:
+            btnDict[button['Name']] = Button(UIHost, button['ID'], 
+                                                repeatTime = button['repeatTime'])
+        elif button['holdTime'] != None and button['repeatTime'] != None:
+            btnDict[button['Name']] = Button(UIHost, button['ID'],
+                                                holdTime = button['holdTime'],
+                                                repeatTime = button['repeatTime'])
+    
+    ## return btnDict
+    return btnDict
+    # except Exception as inst: 
+    #     ## catch exceptions which may occure from misformated or missing data
+    #     ## log execption data to program log
+    #     execptStr = "Python Execption: {} ({})".format(inst, inst.args)
+    #     ProgramLog(execptStr, 'warning')
+    #     ## return none (error)
+    #     return None
 
 def BuildButtonGroups(btnDict: Dict,
                       jsonObj: Dict = {},
@@ -139,7 +145,7 @@ def BuildButtonGroups(btnDict: Dict,
         ## return None (error)
         return None
 
-def BuildKnobs(UIHost: extronlib.device,
+def BuildKnobs(UIHost: UIDevice,
                jsonObj: Dict = {},
                jsonPath: str = "") -> Union[Dict, None]:
     """Builds a dictionary of Extron Knobs from a json object or file
@@ -184,7 +190,7 @@ def BuildKnobs(UIHost: extronlib.device,
         ## return none (error)
         return None
 
-def BuildLevels(UIHost: extronlib.device,
+def BuildLevels(UIHost: UIDevice,
                 jsonObj: Dict = {},
                 jsonPath: str = "") -> Union[Dict, None]:
     """Builds a dictionary of Extron Levels from a json object or file
@@ -229,7 +235,7 @@ def BuildLevels(UIHost: extronlib.device,
         ## return none (error)
         return None
 
-def BuildSliders(UIHost: extronlib.device,
+def BuildSliders(UIHost: UIDevice,
                  jsonObj: Dict = {},
                  jsonPath: str = "") -> Union[Dict, None]:
     """Builds a dictionary of Extron Sliders from a json object or file
@@ -274,7 +280,7 @@ def BuildSliders(UIHost: extronlib.device,
         ## return none (error)
         return None
 
-def BuildLabels(UIHost: extronlib.device,
+def BuildLabels(UIHost: UIDevice,
                 jsonObj: Dict = {},
                 jsonPath: str = "") -> Union[Dict, None]:
     """Builds a dictionary of Extron Labels from a json object or file

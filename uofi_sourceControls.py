@@ -32,11 +32,11 @@ import main
 ##
 ## Begin Function Definitions --------------------------------------------------
 
-def InitSourceModule(UIHost: extronlib.device,
-                     sourceBtns: extronlib.system.MESet,
-                     sourceInds: extronlib.system.MESet,
-                     arrowBtns: List[extronlib.ui.Button],
-                     advDest: Dict[Dict[extronlib.ui.Label, extronlib.ui.Button]],
+def InitSourceModule(UIHost: UIDevice,
+                     sourceBtns: MESet,
+                     sourceInds: MESet,
+                     arrowBtns: List[Button],
+                     advDest: Dict[Dict[Label, Button]],
                      DoSourceSwitch: function) -> bool:
     # TODO: ensure argument typing is correct
     """Initializes Source Switching module
@@ -180,10 +180,10 @@ def InitSourceModule(UIHost: extronlib.device,
         ## return false (error)
         return False
 
-def UpdateSourceMenu(UIHost: extronlib.device,
-                     sourceBtns: extronlib.system.MESet,
-                     sourceInds: extronlib.system.MESet,
-                     arrowBtns: List[extronlib.ui.Button]) -> None:
+def UpdateSourceMenu(UIHost: UIDevice,
+                     sourceBtns: MESet,
+                     sourceInds: MESet,
+                     arrowBtns: List[Button]) -> None:
     # TODO: ensure the typing is correct
     """Updates the formatting of the source menu. Use when the number of sources
     or the pagination of the source bar changes
@@ -431,8 +431,8 @@ def DestIDToName(id: str, destList: List = settings.destinations) -> str:
     ## if we get here then there was no valid match for the id
     raise LookupError("Provided ID ({}) not found".format(id))
 
-def GetBtnsForDest(btnDict: Dict[extronlib.ui.Button],
-                   destID: str) -> Dict[extronlib.ui.Button]:
+def GetBtnsForDest(btnDict: Dict[Button],
+                   destID: str) -> Dict[Button]:
     """Get Advanced Display button objects for a given destination ID
 
     Args:
@@ -490,8 +490,8 @@ def GetAdvShareLayout(dest: List = settings.destinations) -> str:
         
     return "Source-Control-Adv_{}".format(",".join(rows))
             
-def UpdateAdvDestButton(btn: extronlib.ui.Button,
-                        ctlBtn: extronlib.ui.Button,
+def UpdateAdvDestButton(btn: Button,
+                        ctlBtn: Button,
                         curSource: str) -> None:
     btn.SetText(curSource['name'])
     
