@@ -218,6 +218,7 @@ class DigitalIOInterface:
         else:
             self.State = 'On'
     
+import socket
 class EthernetClientInterface:
     _valid_protocols = ['TCP', 'UDP', 'SSH']
     def __init__(self,
@@ -249,8 +250,8 @@ class EthernetClientInterface:
         # ReceiveData
         
         self.Credentials = Credentials
-        self.Hostname = Hostname ## TODO: need to figure out how to get an IP from hostname
-        self.IPAddress = None
+        self.Hostname = Hostname
+        self.IPAddress = socket.gethostbyname(Hostname)
         self.IPPort = IPPort
         if Protocol not in self._valid_protocols:
             raise ValueError('Protocol must be one of TCP, UDP, or SSH')

@@ -15,8 +15,8 @@ print(Version()) ## Sanity check ControlScript Import
 ##
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
-from json import json
-from typing import Dict, Tuple, List
+import json
+from typing import Dict, Tuple, List, Union
 ## End Python Imports ----------------------------------------------------------
 ##
 ## Begin User Import -----------------------------------------------------------
@@ -50,13 +50,10 @@ def pinMask(pinLbl: Label, pinStr: str) -> str:
 
 def InitPINModule(UIHost: UIDevice,
                   startBtn: Button,
-                  pinBtns: Dict[List[Button], # 0-9 buttons
-                                Button,       # backspace button
-                                Button],      # cancel button
+                  pinBtns: Dict[str, Union[List[Button], Button]],
                   pinLbl: Label,
                   pinCode: str,
                   destPage: str) -> bool:
-    # TODO: verify the typing for pinBtns
     """Initializes the PIN security module
 
     Args:

@@ -2,6 +2,8 @@ from typing import Dict, Tuple, List, NamedTuple, Union, Callable
 from datetime import datetime
 import re
 import os
+import extronlib.ui
+import extronlib.interface
 
 ## CLASS DEFINITIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Clock:
@@ -185,13 +187,13 @@ class RFile:
     def __init__(self, Filename: str, mode: str='r', encoding: str=None, newline: str=None) -> None:
         self.FileName = Filename
         
-        re_str = r"[rwa]{1}\+?[bt]?"
+        re_str = r"[rwa]{1}\+?([bt]?)"
         re_match = re.match(re_str, mode)
         if not re_match:
             raise ValueError("Open mode is not a valid value")
         if re_match.group(1) == '':
             self._binary = False
-            self._mode = '{m}t'
+            self._mode = '{m}t'.format(m=mode)
         elif re_match.group(1) == 'b':
             self._binary = True
             self._mode = mode
@@ -205,11 +207,10 @@ class RFile:
             self._enc = 'ascii'
         self._new_line = newline
         
-        with open('{path}{file}'.format(path=self._get_path(), file=self.FileName),
+        self._file_object = open('{path}{file}'.format(path=self._get_path(), file=self.FileName),
                   mode= self._mode,
                   encoding= self._enc,
-                  newline= self._new_line) as f:
-            self._file_object = f
+                  newline= self._new_line)
         
     
     @classmethod
@@ -301,21 +302,49 @@ class RFile:
         self._file_object.writelines(seq)
         
 class MESet:
-    def __init__(self, Objects: List) -> None: # TODO: update Objects list subtype
+    def __init__(self, Objects: List[Union[extronlib.ui.Button,
+                                           extronlib.interface.DigitalIOInterface,
+                                           extronlib.interface.FlexIOInterface,
+                                           extronlib.interface.PoEInterface,
+                                           extronlib.interface.RelayInterface,
+                                           extronlib.interface.SWACReceptacleInterface,
+                                           extronlib.interface.SWPowerInterface,
+                                           extronlib.interface.TallyInterface]]) -> None:
         self.Objects = Objects
         self._activeIndex = 0
         self._states = []
         for o in self.Objects:
             self._states.append([0,1])
 
-    def Append(self, obj) -> None: # TODO: update obj type
+    def Append(self, obj: Union[extronlib.ui.Button,
+                                extronlib.interface.DigitalIOInterface,
+                                extronlib.interface.FlexIOInterface,
+                                extronlib.interface.PoEInterface,
+                                extronlib.interface.RelayInterface,
+                                extronlib.interface.SWACReceptacleInterface,
+                                extronlib.interface.SWPowerInterface,
+                                extronlib.interface.TallyInterface]) -> None:
         self.Objects.append(obj)
         self._states.append([0, 1])
         
-    def GetCurrent(self): # TODO: Update return type
+    def GetCurrent(self) -> Union[extronlib.ui.Button,
+                                    extronlib.interface.DigitalIOInterface,
+                                    extronlib.interface.FlexIOInterface,
+                                    extronlib.interface.PoEInterface,
+                                    extronlib.interface.RelayInterface,
+                                    extronlib.interface.SWACReceptacleInterface,
+                                    extronlib.interface.SWPowerInterface,
+                                    extronlib.interface.TallyInterface]:
         return self.Objects[self._activeIndex]
     
-    def Remove(self, obj) -> None: # TODO: update obj type
+    def Remove(self, obj: Union[extronlib.ui.Button,
+                                extronlib.interface.DigitalIOInterface,
+                                extronlib.interface.FlexIOInterface,
+                                extronlib.interface.PoEInterface,
+                                extronlib.interface.RelayInterface,
+                                extronlib.interface.SWACReceptacleInterface,
+                                extronlib.interface.SWPowerInterface,
+                                extronlib.interface.TallyInterface]) -> None:
         if type(obj) == 'int':
             self.Objects.pop(obj)
             self._states.pop(obj)
@@ -324,13 +353,30 @@ class MESet:
             self.Objects.remove(obj)
             self._states.pop(index)
         
-    def SetCurrent(self, obj) -> None: # TODO: update obj type
+    def SetCurrent(self, obj: Union[extronlib.ui.Button,
+                                    extronlib.interface.DigitalIOInterface,
+                                    extronlib.interface.FlexIOInterface,
+                                    extronlib.interface.PoEInterface,
+                                    extronlib.interface.RelayInterface,
+                                    extronlib.interface.SWACReceptacleInterface,
+                                    extronlib.interface.SWPowerInterface,
+                                    extronlib.interface.TallyInterface]) -> None:
         if type(obj) == 'int':
             self._activeIndex = obj
         else:
             self._activeIndex = self.Objects.index(obj)
         
-    def SetStates(self, obj, offState: int, onState: int) -> None: # TODO: update obj type
+    def SetStates(self,
+                  obj: Union[extronlib.ui.Button,
+                             extronlib.interface.DigitalIOInterface,
+                             extronlib.interface.FlexIOInterface,
+                             extronlib.interface.PoEInterface,
+                             extronlib.interface.RelayInterface,
+                             extronlib.interface.SWACReceptacleInterface,
+                             extronlib.interface.SWPowerInterface,
+                             extronlib.interface.TallyInterface],
+                  offState: int,
+                  onState: int) -> None:
         if type(obj) == 'int':
             self._states[obj][0] = offState
             self._states[obj][1] = onState
@@ -341,55 +387,200 @@ class MESet:
 
 class Timer:
     def __init__(self, Interval: float, Function: Callable=None) -> None:
-        # TODO: figure out if this decorator definition works in a class
-        def timer_wrapper(func=self.Function):
-            func(Timer = self, Count = self.Count)
+        """The Timer class allows the user to execute programmed actions on a periodic time schedule.
+
+        ```
+        @Timer(5)
+        def handlePolling(timer, count):
+            mainProjector.Send('get Power\r')
+
+            if not count % 20:
+                mainProjector.Send('get LampHours\r')
+        ```
+        
+        Note
+            - The handler (Function) must accept exactly two parameters, which are the Timer that called it and the Count.
+            - If the handler (Function) has not finished by the time the Interval has expired, Function will not be called and Count will not be incremented (i.e. that interval will be skipped).
+            - In addition to being used as a decorator, Timer can be named and modified.
+
+        Parameters:	
+            - Interval (float) – How often to call the handler in seconds (minimum interval is 0.1s).
+            - Function (function) – Handler function to execute each Interval.
+        """
+        ## Untracked Events
+        # StateChanged
         
         self.Count = 0
         self.Function = Function
         self.Interval = Interval
         self.State = 'Running'
         
-        ## Untracked Events
-        # StateChanged
+        def timer_wrapper(func=self.Function):
+            func(Timer = self, Count = self.Count)
         
     def Change(self, Interval: float) -> None:
+        """Set a new Interval value for future events in this instance.
+
+        Parameters:	Interval (float) – How often to call the handler in seconds.
+        ```
+        @event(buttonObject, 'Pressed')
+        def buttonObjectHandler(button, state):
+            DoSomething()
+            PollingTimer.Change(60)
+        ```
+        """
         self.Interval = Interval
         
     def Pause(self) -> None:
+        """Pause the timer (i.e. stop calling the Function).
+
+        Note - Does not reset the timer or the Count.
+
+        ```
+        @event(mainProjector, 'Offline')
+        def handleOfflineEvent(interface, state):
+            PollingTimer.Pause()
+        ```
+        """
         self.State = 'Paused'
         
     def Restart(self) -> None:
+        """Restarts the timer – resets the Count and executes the Function in Interval seconds.
+
+        ```
+        @event(buttonObject, 'Pressed')
+        def buttonObjectHandler(button, state):
+            DoSomething()
+            PollingTimer.Restart()
+        ```
+        """
         self.State = 'Running'
         self.Count = 0
         
     def Resume(self) -> None:
+        """Resume the timer after being paused or stopped.
+
+        ```
+        @event(mainProjector, 'Online')
+        def handleOnlineEvent(interface, state):
+            PollingTimer.Resume()
+        ```
+        """
         self.State = 'Running'
         
     def Stop(self) -> None:
+        """Stop the timer.
+
+        Note - Resets the timer and the Count.
+
+        ```
+        @event(mainProjector, 'Online')
+        def handleOfflineEvent(interface, state):
+            PollingTimer.Stop()
+        ```
+        """
         self.State = 'Stopped'
         self.Count = 0
 
 class Wait:
     def __init__(self, Time: float, Function: Callable=None) -> None:
-        # TODO: figure out if this decorator definition works in a class
-        def wait_wrapper(func=self.Function):
-            func(Time = self.Time, Count = self.Count)
-            
+        """The wait class allows the user to execute programmed actions after a desired delay without blocking other processor activity.
+
+        ---
+        ```
+        @event(PowerOn, 'Pressed')
+        def HandlePowerButton(button, state):
+            mainProjector.Send('Power=On\r')
+            @Wait(30)
+            def CheckPowerState():
+                mainProjector.Send('get Power\r')
+        ```
+        ---
+
+        In addition to being used as a one-shot (decorator), Wait can be named and reusable.
+
+        Parameters:	
+            - Time (float) – Expiration time of the wait in seconds
+            - Function (function) – Code to execute when Time expires
+        ---
+        
+        ```
+        closeWait = None    # Delay to hide Setup Page
+
+        @event(ShowSetup, 'Released')
+        def handleShowSetup(button, state):
+            global closeWait
+            def CloseSetupPage():
+                ConfRoomWall.ShowPage('Main')
+            closeWait = Wait(60, CloseSetupPage)
+            ConfRoomWall.ShowPage('Setup')
+        ```
+        """
+        
         self.Function = Function
         self.Time = Time
         self._currentTime = Time
         
+        def wait_wrapper(func=self.Function):
+            func(Time = self.Time, Count = self.Count)
+            
     def Add(self, Time: float) -> None:
+        """Add time to current interval.
+
+        Note - Add() does not modify Time.
+
+        Parameters:	Time (float) – Time in seconds
+
+        ```
+        QueryDelay = Wait(3)
+
+        def ErrorRecieved():    # Called by received data handler
+            QueryDelay.Add(1)
+        ```
+        """
         self._currentTime = self._currentTime + Time
         
     def Cancel(self) -> None:
+        """Stop Function from executing when the Time expires.
+
+        ```
+        @event(CloseSetup, 'Released')
+        def CloseSetup(button, state):
+            global closeWait
+            if closeWait:
+                closeWait.Cancel()
+                closeWait = None
+            ConfRoomWall.ShowPage('Main')
+        ```
+        """
         self._currentTime = 0
         
     def Change(self, Time: float) -> None:
+        """Set a new Time value for current and subsequent runs of this instance.
+
+        Note - Change() will modify Time.
+
+        Parameters:	Time (float) – Time in seconds
+
+        ```
+        @event(buttonObject, 'Pressed')
+        def buttonObjectHandler(button, state):
+            DoSomething()
+            closeWait.Change(60)
+        ```
+        """
         self.Time = Time
         
     def Restart(self) -> None:
+        """Restarts the Wait (i.e. executes the Function in Time seconds). If the Wait is active, Restart() cancels that Wait before starting a new one.
+
+        ```
+        @event(buttonObject, 'Pressed')
+        def buttonObjectHandler(button, state):
+            DoSomething()
+            closeWait.Restart()
+        ```
+        """
         self._currentTime = self.Time
     
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -398,12 +589,50 @@ class Wait:
 import ssl
 
 def GetUnverifiedContext() -> ssl.SSLContext:
+    """Python 3.4.3 changed the default behavior of the stdlib http clients. They will now verify that “the server presents a certificate which is signed by a CA in the platform trust store and whose hostname matches the hostname being requested by default”. This method returns an unverified context for use when a valid certificate is impossible.
+
+    Returns:	unverified context object compatible with stdlib http clients.
+    Return type:	ssl.SSLContext
+
+    ---
+    
+    ```
+    import urllib.request
+    from extronlib.system import GetUnverifiedContext
+
+    # This disables all verification
+    context = GetUnverifiedContext()
+
+    urllib.request.urlopen("https://invalid-cert", context=context)
+    ```
+    
+    ---
+
+    ***Warning*** - This is a potential security risk. It should only be used when a secure solution is impossible. GetSSLContext should be used whenever possible.
+    """
     context = ssl.SSLContext()
     context.verify_mode = ssl.CERT_OPTIONAL
     context.load_default_certs()
     return context
 
 def GetSSLContext(alias: str) -> ssl.SSLContext:
+    """Retrieve a Certificate Authority certificate from the Security Store and use it to create an SSL context usable with standard Python http clients.
+
+    Parameters:	alias (string) – name of the CA certificate as it appears in the Security Store.
+    Returns:	an SSL context object compatible with stdlib http clients.
+    Return type:	ssl.SSLContext
+
+    ---
+    
+    ```
+    import urllib.request
+    from extronlib.system import GetSSLContext
+
+    context = GetSSLContext('yourcert')
+
+    urllib.request.urlopen("https://www.example.com", context=context)
+    ```
+    """
     context = ssl.SSLContext()
     context.verify_mode = ssl.CERT_REQUIRED
     context.load_default_certs()
@@ -433,18 +662,76 @@ _tz_list = \
 _system_time = datetime.now() # add a timezone to this
 
 def SetAutomaticTime(Server: str) -> None:
+    """Turn on NTP time synchronization using Server as the time source.
+
+    Parameters:	Server (string) – the NTP server to synchronize with
+    New in version 1.1.
+
+    ```
+    SetAutomaticTime('time.example.com')
+    ```
+    """
     _ntp_server = Server
     
 def SetManualTime(DateAndTime: datetime) -> None:
+    """Change the system time. This will turn off NTP synchronization if it is on.
+
+    Parameters:	DateAndTime (datetime) – the new system date and time
+    
+    New in version 1.1.
+
+    ```
+    from datetime import datetime
+
+    # Turn off NTP sync but keep the current system time.
+    SetManualTime(datetime.now())
+
+    # Set system time to noon on January 1, 2020
+    dt = datetime(2020, 1, 1, 12, 0, 0)
+    SetManualTime(dt)
+    ```
+    """
     _system_time = DateAndTime
     
 def GetCurrentTimezone() -> NamedTuple:
+    """Returns:	the current time zone of the primary controller
+    Return type:	namedtuple
+    The returned namedtuple contains three pieces of string data: the time zone id, the time zone description, and MSid which contains a Microsoft-compatible time zone identifier.
+
+    New in version 1.1.
+    """
     return _tz
 
 def GetTimezoneList() -> List[NamedTuple]:
+    """Returns:	all time zones supported by the system
+    Return type:	list of namedtuples
+
+    Each item in the returned list is a namedtuple that contains three pieces of string data: the time zone id, the time zone description, and MSid which contains a Microsoft-compatible time zone identifier.
+
+    New in version 1.1.
+
+    ```
+    for zone in GetTimezoneList():
+        print(zone.id + ', ' + zone.description)
+    ```    
+    """
     return _tz_list
 
 def SetTimeZone(id: str) -> None:
+    """Change the system time zone. Time zone affects Daylight Saving Time behavior and is used to calculate time of day when NTP time synchronization is turned on.
+
+    Parameters:	id (string) – The new system time zone identifier. Use an item returned by GetTimezoneList to get the time zone id for this parameter.
+
+    New in version 1.1.
+
+    ```
+    # Set the system time zone to 'Pacific'.
+    for zone in GetTimezoneList():
+        if 'Pacific' in zone.description:
+            SetTimeZone(zone.id)
+            break
+    ```        
+    """
     for tz in _tz_list:
         if id == tz.id:
             _tz = tz
@@ -457,6 +744,18 @@ def SetTimeZone(id: str) -> None:
 import subprocess
 
 def Ping(hostname: str='localhost', count: int=5) -> Tuple[int, int, float]:
+    """Ping is a network administration utility that’s used to test reachablilty of a remote network host. It achieves this by measuring the round-trip time of messages sent to and echoed back by the remote host.
+
+    This function sends count pings from the control processor and and returns the result in a tuple: (# of successful pings, # of failed pings, avg. round-trip time)
+
+    Parameters:	
+        - hostname (string) – IP address or hostname to ping.
+        - count (int) – how many times to ping.
+
+    Returns: tuple (# of successes, # of failures, avg. time)
+
+    Return type: (int, int, float)
+    """
     ping = subprocess.getoutput('ping -n {c} {h}'.format(c = count, h = hostname))
     # successes, # failure, avg time
     reSucc = r"Received = (\d+)"
@@ -472,6 +771,14 @@ def Ping(hostname: str='localhost', count: int=5) -> Tuple[int, int, float]:
     
 import struct, socket
 def WakeOnLan(macAddress: str, port: int=9) -> None:
+    """Wake-on-LAN is an computer networking standard that allows a computer to be awakened by a network message. The network message, ‘Magic Packet’, is sent out through UDP broadcast, port 9.
+
+    Parameters:	
+        - macAddress (string) – Target device’s MAC address. The format is six groups of two hex digits, separated by hyphens ('01-23-45-67-ab-cd', e.g.).
+        - port (int) – Port on which target device is listening.
+    
+    Note - Typical ports for WakeOnLan are 0, 7 and 9.
+    """
     # Construct 6 byte hardware address
     add_oct = macAddress.split('-') # extronlib expects "-" separators
     if len(add_oct) != 6:
@@ -501,10 +808,25 @@ def WakeOnLan(macAddress: str, port: int=9) -> None:
 ## OTHER METHODS ---------------------------------------------------------------
 
 def GetSystemUpTime() -> float:
+    """Returns:	system up time in seconds
+    Return type:	float
+    """
     return 1867.2022
 
 _ProgramLog = ''
 def ProgramLog(Entry: str, Severity: str = 'error') -> None:
+    """Write entry to program log file.
+
+    Parameters:	
+        - Entry (string) – the message to enter into the log
+        - Severity (string) – indicates the severity to the log viewer. ('info', 'warning', or 'error')
+    
+    Note - ProgramLog also generates a trace message.
+
+    ```
+    ProgramLog('Projector lamp hours > 3000.', 'warning')
+    ```
+    """
     global _ProgramLog
     
     dt = datetime.now()
@@ -518,6 +840,16 @@ def ProgramLog(Entry: str, Severity: str = 'error') -> None:
         raise ValueError("Severity must be either 'error', 'warning', or 'info'")
 
 def SaveProgramLog(path: Union[File, str]=None) -> None:
+    """Save the ProgramLog to the specified User file system location.
+
+    If no path is supplied, the Program Log will be saved in the root of the User file space with the name ‘ProgramLog YYYY-MM-DD HHMMSS.txt’ where ‘YYYY-MM-DD’ will be replaced with the current date and ‘HHMMSS’ will be replaced with the current 24-hour time including seconds.
+
+    If path points to a directory, the log will be saved in that directory using the file name pattern above.
+
+    The file will be overwritten if it already exists.
+
+    Parameters:	path (File or string) – The file path to save the log to.
+    """
     if path == None:
         dt = datetime.now()
         path = 'ProgramLog {year}-{month}-{day} {hr}{min}{sec}.txt'.format(
@@ -538,7 +870,22 @@ def SaveProgramLog(path: Union[File, str]=None) -> None:
         
 
 def RestartSystem() -> None:
+    """Stops the main script running on the primary control processor only then starts it again.
+
+    ```
+    from extronlib.system import File, RestartSystem, SaveProgramLog
+    from datetime import datetime
+
+    # Save the ProgramLog for later inspection.
+    dt = datetime.now()
+    filename = 'ProgramLog {}.txt'.format(dt.strftime('%Y-%m-%d %H%M%S'))
+
+    with File(filename, 'w') as f:
+        SaveProgramLog(f)
+
+    RestartSystem()
+    ```
+    """
     pass
 
 ## -----------------------------------------------------------------------------
-

@@ -15,8 +15,8 @@ print(Version()) ## Sanity check ControlScript Import
 ##
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
-from json import json
-from typing import Dict, Tuple, List
+import json
+from typing import Dict, Tuple, List, Callable, Union
 
 ## End Python Imports ----------------------------------------------------------
 ##
@@ -24,7 +24,6 @@ from typing import Dict, Tuple, List
 #### Custom Code Modules
 import utilityFunctions
 import settings
-import main
 
 #### Extron Global Scripter Modules
 
@@ -36,9 +35,8 @@ def InitSourceModule(UIHost: UIDevice,
                      sourceBtns: MESet,
                      sourceInds: MESet,
                      arrowBtns: List[Button],
-                     advDest: Dict[Dict[Label, Button]],
-                     DoSourceSwitch: function) -> bool:
-    # TODO: ensure argument typing is correct
+                     advDest: Dict[str, Dict[str, Union[Label, Button]]],
+                     DoSourceSwitch: Callable) -> bool:
     """Initializes Source Switching module
 
     Args:
@@ -47,7 +45,7 @@ def InitSourceModule(UIHost: UIDevice,
         sourceInds (extronlib.system.MESet): MESet of source indicators
         arrowBtns (List[extronlib.ui.Button]): List of arrow button objects, 0
             must be previous/left button and 1 must be next/right button
-        advDest (Dict[Dict[extronlib.ui.Label, extronlib.ui.Button]]):
+        advDest (Dict[str, Dict[str, Unions[extronlib.ui.Label, extronlib.ui.Button]]]):
             Dictionary of dictionaries containing advanced switching labels and
             buttons
         DoSourceSwitch (function): Function to run when doing a source switch
@@ -431,8 +429,8 @@ def DestIDToName(id: str, destList: List = settings.destinations) -> str:
     ## if we get here then there was no valid match for the id
     raise LookupError("Provided ID ({}) not found".format(id))
 
-def GetBtnsForDest(btnDict: Dict[Button],
-                   destID: str) -> Dict[Button]:
+def GetBtnsForDest(btnDict: Dict[str, Button],
+                   destID: str) -> Dict[str, Button]:
     """Get Advanced Display button objects for a given destination ID
 
     Args:
@@ -451,12 +449,12 @@ def GetBtnsForDest(btnDict: Dict[Button],
     
     destDict = {}
     
-    for dest in settings.destinations.values():
+    for dest in settings.destinations:
         if dest['id'] == destID:
             pos = dest['adv-layout']['pos']
             row = dest['adv-layout']['row']
     
-    if not (type(row) == 'int' and type(pos) == 'int'): 
+    if not (type(row) == type(1) and type(pos) == type(1)): 
         raise LookupError("Provided destination ID ({}) not found in destination."
                           .format(id))
     
@@ -563,8 +561,16 @@ def SwitchSources(src: str, dest: str = 'all') -> bool:
     Return:
         bool: True on success and False on failure
     """    
-    # TODO: build switching functionality
+    # handle src='none' as a blank input/untie
     # all should iterate over all defined destinations, and not all switcher outputs 
+    # TODO: build switching functionality
+    return True
+
+def MatrixSwitchSources(src: int, dest: Union[str, int] = 'all', mode: str='AV') -> bool:
+    # handle src=0 as a blank input/untie
+    # all should iterate over all switcher outputs, and not just defined destinations
+    # mode can be 'AV', 'Vid', or 'Aud'
+    # TODO: build switching functionality
     return True
 
 ## End Function Definitions ----------------------------------------------------

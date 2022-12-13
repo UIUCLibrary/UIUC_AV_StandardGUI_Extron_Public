@@ -16,6 +16,7 @@ primaryDestination = "PRJ001" # Primary destination
 micCtl = 1                    # Microphone control
    # 0 - no mic control
    # 1 - mic control
+techMatrixSize = (8,4)
 
 # Icon Map
 #     0 - no source
@@ -188,6 +189,7 @@ CtlProc_Main = None
 TP_Main = None
 TransitionDict = {}
 SourceButtons = {}
+ActModBtns = {}
 AdvDestinationDict = {}
 PinButtons = {}
 MatrixBtns = {}

@@ -66,7 +66,7 @@ TP_Lbls = BuildLabels(settings.TP_Main, jsonPath='controls.json')
 ##
 ## Begin Function Definitions --------------------------------------------------
 
-def Initialize() -> None:
+def Initialize() -> bool:
     #### Set initial page & room name
     settings.TP_Main.ShowPage('Splash')
     TP_Btns['Room-Label'].SetText(settings.roomName)
@@ -100,6 +100,11 @@ def Initialize() -> None:
                 TP_Btns['SourceMenu-Next']
               ]
         }
+        
+    settings.ActModBtns = {"select": TP_Btn_Grps['Activity-Select'],
+                           "indicator": TP_Btn_Grps['Activity-Indicator'],
+                           "end": TP_Btns['Shutdown-EndNow'],
+                           "cancel": TP_Btns['Shutdown-Cancel']}
     
     settings.PinButtons = \
         {
@@ -119,7 +124,7 @@ def Initialize() -> None:
             "cancel": TP_Btns['PIN-Cancel']
         }
         
-    for dest in settings.destinations.values():
+    for dest in settings.destinations:
         settings.AdvDestinationDict[dest['id']] = \
             GetBtnsForDest(TP_Btns, dest['id'])
         settings.AdvDestinationDict[dest['id']]['label'] = \
@@ -137,15 +142,8 @@ def Initialize() -> None:
                   'Tech')
 
     #### Activity Control Module
-    settings.TP_Main.ShowPopup('Menu-Activity-{}'.format(settings.activityMode))
-    settings.TP_Main.ShowPopup('Menu-Activity-open-{}'.format(settings.activityMode))
-
-    actModBtns = {"select": TP_Btn_Grps['Activity-Select'],
-                  "indicator": TP_Btn_Grps['Activity-Indicator'],
-                  "end": TP_Btns['Shutdown-EndNow'],
-                  "cancel": TP_Btns['Shutdown-Cancel']}
     InitActivityModule(settings.TP_Main,
-                       actModBtns,
+                       settings.ActModBtns,
                        TP_Lbls['ShutdownConf-Count'],
                        TP_Lvls['ShutdownConfIndicator'],
                        SystemStart,
@@ -155,7 +153,7 @@ def Initialize() -> None:
     #### Source Control Module
     InitSourceModule(settings.TP_Main,
                      TP_Btn_Grps['Source-Select'],
-                     TP_Btn_Grps['Source-Indicator']
+                     TP_Btn_Grps['Source-Indicator'],
                      [TP_Btns['SourceMenu-Prev'], TP_Btns['SourceMenu-Next']],
                      settings.AdvDestinationDict,
                      SwitchSources)
@@ -163,6 +161,7 @@ def Initialize() -> None:
     ## DO ADDITIONAL INITIALIZATION ITEMS HERE
     
     print('System Initialized')
+    return True
 
 def StartupActions() -> None:
     pass

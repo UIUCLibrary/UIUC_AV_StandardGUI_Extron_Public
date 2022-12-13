@@ -4,13 +4,10 @@ import unittest
 import main
 ## -----------------------------------------------------------------------------
 
-class TestMain(unittest.TestCase):
+class Main_TestClass(unittest.TestCase):
     
     def test_Initilize(self):
-        # set up test environment
-        # get outputs
-        # assert outputs against expectations
-        pass
+        self.assertTrue(main.Initialize())
     
 if __name__ == '__main__':
     unittest.main()

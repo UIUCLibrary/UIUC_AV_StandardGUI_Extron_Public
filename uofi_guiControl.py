@@ -43,9 +43,15 @@ def BuildButtons(UIHost: UIDevice,
         jsonPath (str, optional): The path to the file containing json formatted
             button information. Defaults to "".
 
+    Raises:
+        TypeError: if UIHost is not an extron.device.UIDevice object
+        ValueError: if specified fileat jsonPath does not exist
+        ValueError: if neither jsonObj or jsonPath are specified
+
     Returns:
         Dict: Returns dictionary object of buttons on success
-    """    
+    """
+
     if type(UIHost) != UIDevice:
         raise TypeError('UIHost must be an extronlib.device.UIDevice object')
     
@@ -66,9 +72,6 @@ def BuildButtons(UIHost: UIDevice,
     elif jsonObj == {} and jsonPath == "":
         raise ValueError('Either jsonObj or jsonPath must be specified')
     
-
-    
-    # try:
     ## format button info into btnDict
     for button in jsonObj['buttons']:
         ## only sets holdTime or repeatTime for non null/None values
@@ -87,17 +90,10 @@ def BuildButtons(UIHost: UIDevice,
     
     ## return btnDict
     return btnDict
-    # except Exception as inst: 
-    #     ## catch exceptions which may occure from misformated or missing data
-    #     ## log execption data to program log
-    #     execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-    #     ProgramLog(execptStr, 'warning')
-    #     ## return none (error)
-    #     return None
 
 def BuildButtonGroups(btnDict: Dict,
                       jsonObj: Dict = {},
-                      jsonPath: str = "") -> Union[Dict, None]:
+                      jsonPath: str = "") -> Dict:
     """Builds a dictionary of mutually exclusive button groups from a json
         object or file
 
@@ -108,8 +104,12 @@ def BuildButtonGroups(btnDict: Dict,
         jsonPath (str, optional): The path to the file containing json formatted
             button group information. Defaults to "".
 
+    Raises:
+        ValueError: if specified fileat jsonPath does not exist
+        ValueError: if neither jsonObj or jsonPath are specified
+    
     Returns:
-        Dict|None: Returns a dictionary containing Extron MESet objects on
+        Dict: Returns a dictionary containing Extron MESet objects on
             success, or None on failure
     """
     ## do not expect both jsonObj and jsonPath
@@ -123,31 +123,25 @@ def BuildButtonGroups(btnDict: Dict,
             jsonFile.close()
             jsonObj = json.loads(jsonStr)
         else: ## jsonPath was invalid, so return none (error)
-            return None
+            raise ValueError('Specified file does not exist')
+    elif jsonObj == {} and jsonPath == "":
+        raise ValueError('Either jsonObj or jsonPath must be specified')
+
+    ## create MESets and build grpDict
+    for group in jsonObj['buttonGroups']:
+        ## reset btnList and populate it from the jsonObj
+        btnList = []
+        for btn in group['Buttons']:
+            ## get button objects from Dict and add to list
+            btnList.append(btnDict[btn])
+        grpDict[group['Name']] = MESet(btnList)
     
-    try:
-        ## create MESets and build grpDict
-        for group in jsonObj['buttonGroups'].values():
-            ## reset btnList and populate it from the jsonObj
-            btnList = []
-            for btn in group['Buttons'].values():
-                ## get button objects from Dict and add to list
-                btnList.append(btnDict[btn])
-            grpDict[group['Name']] = MESet(btnList)
-        
-        ## return grpDict
-        return grpDict
-    except Exception as inst: 
-        ## catch exceptions which may occure from misformated or missing data
-        ## log execption data to program log
-        execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-        ProgramLog(execptStr, 'warning')
-        ## return None (error)
-        return None
+    ## return grpDict
+    return grpDict
 
 def BuildKnobs(UIHost: UIDevice,
                jsonObj: Dict = {},
-               jsonPath: str = "") -> Union[Dict, None]:
+               jsonPath: str = "") -> Dict:
     """Builds a dictionary of Extron Knobs from a json object or file
 
     Args (only one json arg required, jsonObj takes precedence over jsonPath):
@@ -157,9 +151,12 @@ def BuildKnobs(UIHost: UIDevice,
         jsonPath (str, optional): The path to the file containing json formatted
             knob information. Defaults to "".
 
+    Raises:
+        ValueError: if specified fileat jsonPath does not exist
+        ValueError: if neither jsonObj or jsonPath are specified
+
     Returns:
-        Dict|None: Returns a dictionary containing Extron Knob objects on
-            success, or None on failure
+        Dict: Returns a dictionary containing Extron Knob objects
     """    
     
     ## do not expect both jsonObj and jsonPath
@@ -173,26 +170,21 @@ def BuildKnobs(UIHost: UIDevice,
             jsonFile.close()
             jsonObj = json.loads(jsonStr)
         else: ## jsonPath was invalid, so return none (error)
-            return None
+            raise ValueError('Specified file does not exist')
+    elif jsonObj == {} and jsonPath == "":
+        raise ValueError('Either jsonObj or jsonPath must be specified')
     
-    try:
-        ## format knob info into knobDict
-        for knob in jsonObj['knobs'].values():
-            knobDict[knob['Name']] = Knob(UIHost, knob['ID'])
-        
-        ## return knobDict
-        return knobDict
-    except Exception as inst: 
-        ## catch exceptions which may occure from misformated or missing data
-        ## log execption data to program log
-        execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-        ProgramLog(execptStr, 'warning')
-        ## return none (error)
-        return None
+    
+    ## format knob info into knobDict
+    for knob in jsonObj['knobs']:
+        knobDict[knob['Name']] = Knob(UIHost, knob['ID'])
+    
+    ## return knobDict
+    return knobDict
 
 def BuildLevels(UIHost: UIDevice,
                 jsonObj: Dict = {},
-                jsonPath: str = "") -> Union[Dict, None]:
+                jsonPath: str = "") -> Dict:
     """Builds a dictionary of Extron Levels from a json object or file
 
     Args:
@@ -202,9 +194,12 @@ def BuildLevels(UIHost: UIDevice,
         jsonPath (str, optional): The path to the file containing json formatted
             level information. Defaults to "".
 
+    Raises:
+        ValueError: if specified fileat jsonPath does not exist
+        ValueError: if neither jsonObj or jsonPath are specified
+
     Returns:
-        Dict|False: Returns a dictionary containing Extron Level objects on
-            success, or False on failure
+        Dict: Returns a dictionary containing Extron Level objects
     """    
     
     ## do not expect both jsonObj and jsonPath
@@ -218,26 +213,20 @@ def BuildLevels(UIHost: UIDevice,
             jsonFile.close()
             jsonObj = json.loads(jsonStr)
         else: ## jsonPath was invalid, so return none (error)
-            return None
+            raise ValueError('Specified file does not exist')
+    elif jsonObj == {} and jsonPath == "":
+        raise ValueError('Either jsonObj or jsonPath must be specified')
     
-    try:
-         ## format level info into knobDict
-        for lvl in jsonObj['levels'].values():
-            lvlDict[lvl['Name']] = Level(UIHost, lvl['ID'])
-        
-        ## return lvlDict
-        return lvlDict
-    except Exception as inst: 
-        ## catch exceptions which may occure from misformated or missing data
-        ## log execption data to program log
-        execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-        ProgramLog(execptStr, 'warning')
-        ## return none (error)
-        return None
+    ## format level info into lvlDict
+    for lvl in jsonObj['levels']:
+        lvlDict[lvl['Name']] = Level(UIHost, lvl['ID'])
+    
+    ## return lvlDict
+    return lvlDict
 
 def BuildSliders(UIHost: UIDevice,
                  jsonObj: Dict = {},
-                 jsonPath: str = "") -> Union[Dict, None]:
+                 jsonPath: str = "") -> Dict:
     """Builds a dictionary of Extron Sliders from a json object or file
 
     Args (only one json arg required, jsonObj takes precedence over jsonPath):
@@ -247,9 +236,12 @@ def BuildSliders(UIHost: UIDevice,
         jsonPath (str, optional): The path to the file containing json formatted
             slider information. Defaults to "".
 
+    Raises:
+        ValueError: if specified fileat jsonPath does not exist
+        ValueError: if neither jsonObj or jsonPath are specified
+
     Returns:
-        Dict|None: Returns a dictionary of Extron Slider objects on success, or
-            None on failure
+        Dict: Returns a dictionary containing Extron Slider objects
     """    
     
     ## do not expect both jsonObj and jsonPath
@@ -263,26 +255,20 @@ def BuildSliders(UIHost: UIDevice,
             jsonFile.close()
             jsonObj = json.loads(jsonStr)
         else: ## jsonPath was invalid, so return none (error)
-            return None
-    
-    try:
-         ## format slider info into knobDict
-        for slider in jsonObj['sliders'].values():
-            sliderDict[slider['Name']] = Slider(UIHost, slider['ID'])
+            raise ValueError('Specified file does not exist')
+    elif jsonObj == {} and jsonPath == "":
+        raise ValueError('Either jsonObj or jsonPath must be specified')
         
-        ## return sliderDict
-        return sliderDict
-    except Exception as inst: 
-        ## catch exceptions which may occure from misformated or missing data
-        ## log execption data to program log
-        execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-        ProgramLog(execptStr, 'warning')
-        ## return none (error)
-        return None
+    ## format slider info into sliderDict
+    for slider in jsonObj['sliders']:
+        sliderDict[slider['Name']] = Slider(UIHost, slider['ID'])
+    
+    ## return sliderDict
+    return sliderDict
 
 def BuildLabels(UIHost: UIDevice,
                 jsonObj: Dict = {},
-                jsonPath: str = "") -> Union[Dict, None]:
+                jsonPath: str = "") -> Dict:
     """Builds a dictionary of Extron Labels from a json object or file
 
     Args (only one json arg required, jsonObj takes precedence over jsonPath):
@@ -292,9 +278,12 @@ def BuildLabels(UIHost: UIDevice,
         jsonPath (str, optional): The path to the file containing json formatted
             label information. Defaults to "".
 
+    Raises:
+        ValueError: if specified fileat jsonPath does not exist
+        ValueError: if neither jsonObj or jsonPath are specified
+
     Returns:
-        Dict|None: Returns a dictionary of Extron Label objects on success, or
-            None on failure
+        Dict: Returns a dictionary of Extron Label objects
     """    
     
     ## do not expect both jsonObj and jsonPath
@@ -308,22 +297,16 @@ def BuildLabels(UIHost: UIDevice,
             jsonFile.close()
             jsonObj = json.loads(jsonStr)
         else: ## jsonPath was invalid, so return none (error)
-            return None
+            raise ValueError('Specified file does not exist')
+    elif jsonObj == {} and jsonPath == "":
+        raise ValueError('Either jsonObj or jsonPath must be specified')
     
-    try:
-         ## format label info into knobDict
-        for lbl in jsonObj['labels'].values():
-            labelDict[lbl['Name']] = Label(UIHost, lbl['ID'])
-        
-        ## return labelDict
-        return labelDict
-    except Exception as inst: 
-        ## catch exceptions which may occure from misformated or missing data
-        ## log execption data to program log
-        execptStr = "Python Execption: {} ({})".format(inst, inst.args)
-        ProgramLog(execptStr, 'warning')
-        ## return none (error)
-        return None
+    ## format label info into labelDict
+    for lbl in jsonObj['labels']:
+        labelDict[lbl['Name']] = Label(UIHost, lbl['ID'])
+    
+    ## return labelDict
+    return labelDict
 
 ## End Function Definitions ----------------------------------------------------
 ##

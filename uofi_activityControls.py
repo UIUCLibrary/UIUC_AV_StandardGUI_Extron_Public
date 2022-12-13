@@ -16,7 +16,7 @@ print(Version()) ## Sanity check ControlScript Import
 ## Begin Python Imports --------------------------------------------------------
 from datetime import datetime
 import json
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Callable, Union
 ## End Python Imports ----------------------------------------------------------
 ##
 ## Begin User Import -----------------------------------------------------------
@@ -32,13 +32,12 @@ import settings
 ## Begin Function Definitions --------------------------------------------------
 
 def InitActivityModule(UIHost: UIDevice,
-                       activityBtns: Dict[MESet, MESet, Button, Button],
+                       activityBtns: Dict[str, Union[MESet, Button]],
                        confTimeLbl: Label,
                        confTimeLvl: Level,
-                       DoSystemStart: function,
-                       DoSystemSwitch: function,
-                       DoSystemShutdown: function) -> bool:
-    # TODO: verify the typing for activityBtns
+                       DoSystemStart: Callable,
+                       DoSystemSwitch: Callable,
+                       DoSystemShutdown: Callable) -> bool:
     """Initializes the Activity Selection module
     
     Args:
@@ -61,8 +60,9 @@ def InitActivityModule(UIHost: UIDevice,
     Returns:
         bool: True on success or False on failure
     """
-
-    shutdownTimer = Timer(1, ConfHandler)        
+    
+    UIHost.ShowPopup('Menu-Activity-{}'.format(settings.activityMode))
+    UIHost.ShowPopup('Menu-Activity-open-{}'.format(settings.activityMode))
 
     def ConfHandler(timer, count):
         timeTillShutdown = settings.shutdownConfTimer - count
@@ -72,7 +72,9 @@ def InitActivityModule(UIHost: UIDevice,
         if count >= settings.shutdownConfTimer:
             timer.Stop()
             DoSystemShutdown()
-
+    
+    shutdownTimer = Timer(1, ConfHandler)
+    
     try:
         activityBtns['select'].SetCurrent(0)
         activityBtns['indicator'].SetCurrent(0)
