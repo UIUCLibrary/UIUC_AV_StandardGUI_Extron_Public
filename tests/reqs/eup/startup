@@ -1,0 +1,47 @@
+#!/bin/bash
+
+stopEUP(){
+    echo 'Stop EUP' 
+    ripc_send -m set -u /eup/app/stop normal
+}
+
+checkEUP()
+    if [ -f  /var/eup/import_test.py ]
+    then
+        echo 'Checking EUP'
+        export PYTHONPATH=/var/eup
+        export PYTHONPATH=${PYTHONPATH}:/var/eup/pydev   
+        /usr/local/bin/runeup -B /var/eup/import_test.py
+    else
+        echo 'missing import_test.py can not run check'
+    fi
+
+startEUP(){
+#    if [ -f /var/eup/eping.py ]
+#    then
+#        /usr/bin/python -B /var/eup/eping.py
+#        if [ "$?" -ne "0" ]
+#        then
+#            exit
+#        fi
+#    fi
+
+    echo 'Start EUP'
+    export PYTHONPATH=/var/eup
+    export PYTHONPATH=${PYTHONPATH}:/var/eup/pydev    
+    #/usr/bin/python3 -B /var/eup/EndUserPrograms.py "$@" &
+    /usr/local/bin/runeup -B /var/eup/EndUserPrograms.py &
+}
+        
+if [ "$1" = "stop" ]
+then
+    stopEUP
+elif [ "$1" = "debug" ]
+then
+    /usr/local/bin/runeup -B /var/eup/EndUserPrograms.py $2 &
+elif [ "$1" = "check" ]
+then
+    checkEUP
+else
+    startEUP "$@"
+fi
