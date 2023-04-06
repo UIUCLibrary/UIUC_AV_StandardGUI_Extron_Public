@@ -5,7 +5,7 @@ from typing import Dict, Tuple, List, Union
 ## CLASS DEFINITIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 class ProcessorDevice:
-    def __init__(self, DeviceAlias: str, PartNumber: str=None) -> None:
+    def __init__(self, DeviceAlias: str, PartNumber: str=None) -> object:
         """This class provides a common interface to a TouchLink Control Adapter. The user can instantiate the class directly or create a subclass to add, remove, or alter behavior for different types of devices.
 
         Parameters:
@@ -451,10 +451,12 @@ class UIDevice:
         else:
             raise ValueError('Invalid state provided')
         
-        if int < 0:
+        if duration is None:
+            self.SleepTimer = 0
+        elif duration < 0:
             raise ValueError('Duration must be positive')
-        
-        self.SleepTimer = duration
+        else:
+            self.SleepTimer = duration
         
     def SetVolume(self, name: str, level: int) -> None:
         """Adjust volume level for the given channel

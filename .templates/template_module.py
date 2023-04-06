@@ -1,41 +1,29 @@
-## Begin ControlScript Import --------------------------------------------------
-from extronlib import event, Version
-from extronlib.device import eBUSDevice, ProcessorDevice, UIDevice
-from extronlib.interface import (CircuitBreakerInterface, ContactInterface,
-    DigitalInputInterface, DigitalIOInterface, EthernetClientInterface,
-    EthernetServerInterfaceEx, FlexIOInterface, IRInterface, PoEInterface,
-    RelayInterface, SerialInterface, SWACReceptacleInterface, SWPowerInterface,
-    VolumeInterface)
-from extronlib.ui import Button, Knob, Label, Level, Slider
-from extronlib.system import (Email, Clock, MESet, Timer, Wait, File, RFile,
-    ProgramLog, SaveProgramLog, Ping, WakeOnLan, SetAutomaticTime, SetTimeZone)
+from typing import TYPE_CHECKING, Dict, Tuple, List, Union, Callable
+if TYPE_CHECKING: # pragma: no cover
+    from uofi_gui import GUIController
+    from uofi_gui.uiObjects import ExUIDevice
 
-print(Version()) ## Sanity check ControlScript Import
+## Begin ControlScript Import --------------------------------------------------
+
 ## End ControlScript Import ----------------------------------------------------
 ##
 ## Begin Python Imports --------------------------------------------------------
-from datetime import datetime
-from json import json
-from typing import Dict, Tuple, List
 
 ## End Python Imports ----------------------------------------------------------
 ##
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
-import utilityFunctions
-import settings
-
-#### Extron Global Scripter Modules
+from utilityFunctions import DictValueSearchByKey, Log, RunAsync, debug
 
 ## End User Import -------------------------------------------------------------
+##
+## Begin Class Definitions -----------------------------------------------------
+
+## End Class Definitions -------------------------------------------------------
 ##
 ## Begin Function Definitions --------------------------------------------------
 
 ## End Function Definitions ----------------------------------------------------
-##
-## Begin Script Definition -----------------------------------------------------
-if __name__ == "__main__": ## this module does not run as a script
-    pass
-## End Script Definition -------------------------------------------------------
+
 
 

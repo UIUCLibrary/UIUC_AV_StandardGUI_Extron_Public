@@ -37,13 +37,15 @@ class Button:
         self.BlinkState = 'Not blinking'
         self.Enabled = True
         self.Host = Host
-        if type(ID) == 'int':
+        if type(ID) == type(1):
             self.ID = ID
             self.Name = 'Dummy Name'
-        else:
+        elif type(ID) == type(''):
             self.ID = self._dummy_ID
             self._dummy_ID += 1
             self.Name = ID
+        else:
+            raise ValueError("ID must be either an int ID or string Name")
         self.PressedState = False
         self.State = 0
         self.Visible = True
@@ -135,13 +137,15 @@ class Label:
         """
         
         self.Host = Host
-        if type(ID) == 'int':
+        if type(ID) == type(1):
             self.ID = ID
             self.Name = 'Dummy Name'
-        else:
+        elif type(ID) == type(''):
             self.ID = self._dummy_ID
             self._dummy_ID += 1
             self.Name = ID
+        else:
+            raise ValueError("ID must be either an int ID or string Name")
         self.Visible = True
         self._text = "Dummy Label Text"
             
@@ -168,13 +172,15 @@ class Level:
             ID (int, string) – ID or Name of the UIObject
         """
         self.Host = UIHost
-        if type(ID) == 'int':
+        if type(ID) == type(1):
             self.ID = ID
             self.Name = 'Dummy Name'
-        else:
+        elif type(ID) == type(''):
             self.ID = self._dummy_ID
             self._dummy_ID += 1
             self.Name = ID
+        else:
+            raise ValueError("ID must be either an int ID or string Name")
         self.Level = 0
         self.Max = 100
         self.Min = 0
@@ -248,13 +254,15 @@ class Slider:
         self.Enabled = True
         self.Fill = 0
         self.Host = UIHost
-        if type(ID) == 'int':
+        if type(ID) == type(1):
             self.ID = ID
             self.Name = 'Dummy Name'
-        else:
+        elif type(ID) == type(''):
             self.ID = self._dummy_ID
             self._dummy_ID += 1
             self.Name = ID
+        else:
+            raise ValueError("ID must be either an int ID or string Name")
         self.Max = 100
         self.Min = 0
         self.Step = 1
@@ -266,7 +274,10 @@ class Slider:
         Parameters:	enable (bool) – True to enable the object or False to disable it.
         """
         self.Enabled = enable
-        
+    
+    def SetFill(self, Fill: Union[int, float]) -> None:
+        self.Fill = Fill
+    
     def SetRange(self, Min: Union[int, float], Max: Union[int, float], Step: Union[int, float]=1) -> None:
         """Set slider object’s allowed range and the step size.
 

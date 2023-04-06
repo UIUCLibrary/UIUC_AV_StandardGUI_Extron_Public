@@ -1,4 +1,7 @@
-from typing import Dict, Tuple, List, NamedTuple, Union, Callable
+import sys
+TESTING = ('unittest' in sys.modules.keys())
+
+from typing import Dict, Tuple, List, NamedTuple, Union, Callable, Any
 from datetime import datetime
 import re
 import os
@@ -60,10 +63,10 @@ class File:
     def __init__(self, Filename: str, mode: str='r', encoding: str=None, newline: str=None) -> None:
         self.FileName = Filename
         
-        re_str = r"[rwa]{1}\+?([bt]?)"
+        re_str = r'[rwax]{1}\+?([bt]?)'
         re_match = re.match(re_str, mode)
         if not re_match:
-            raise ValueError("Open mode is not a valid value")
+            raise ValueError("Open mode ({}) is not a valid value".format(mode))
 
         if re_match.group(1) == '':
             self._binary = False
@@ -81,10 +84,19 @@ class File:
             self._enc = 'ascii'
         self._new_line = newline
         
-        self._file_object = open('{path}{file}'.format(path=self._get_path(), file=self.FileName),
-                  mode= self._mode,
-                  encoding= self._enc,
-                  newline= self._new_line)
+        if self.FileName.startswith('/'):
+            self._file_object = open('{path}{file}'.format(path=self._pathroot, file=self.FileName),
+                                     mode= self._mode,
+                                     encoding= self._enc,
+                                     newline= self._new_line)
+        elif self.FileName.startswith('../'):
+            pass
+            # TODO: figure out going up a level when possible
+        elif self.FileName.startswith('./'):
+            self._file_object = open('{path}{file}'.format(path=self._get_path(), file=self.FileName[2:]),
+                                     mode= self._mode,
+                                     encoding= self._enc,
+                                     newline= self._new_line)
         
     
     @classmethod
@@ -335,7 +347,10 @@ class MESet:
                                     extronlib.interface.SWACReceptacleInterface,
                                     extronlib.interface.SWPowerInterface,
                                     extronlib.interface.TallyInterface]:
-        return self.Objects[self._activeIndex]
+        if self._activeIndex is None:
+            return None
+        else:
+            return self.Objects[self._activeIndex]
     
     def Remove(self, obj: Union[extronlib.ui.Button,
                                 extronlib.interface.DigitalIOInterface,
@@ -361,7 +376,9 @@ class MESet:
                                     extronlib.interface.SWACReceptacleInterface,
                                     extronlib.interface.SWPowerInterface,
                                     extronlib.interface.TallyInterface]) -> None:
-        if type(obj) == 'int':
+        if obj is None:
+            self._activeIndex = None
+        elif type(obj) is int:
             self._activeIndex = obj
         else:
             self._activeIndex = self.Objects.index(obj)
@@ -482,106 +499,212 @@ class Timer:
         self.State = 'Stopped'
         self.Count = 0
 
-class Wait:
-    def __init__(self, Time: float, Function: Callable=None) -> None:
-        """The wait class allows the user to execute programmed actions after a desired delay without blocking other processor activity.
+# class Wait:
+#     def __init__(self, Time: float, Function: Callable=None) -> None:
+#         """The wait class allows the user to execute programmed actions after a desired delay without blocking other processor activity.
 
-        ---
-        ```
-        @event(PowerOn, 'Pressed')
-        def HandlePowerButton(button, state):
-            mainProjector.Send('Power=On\r')
-            @Wait(30)
-            def CheckPowerState():
-                mainProjector.Send('get Power\r')
-        ```
-        ---
+#         ---
+#         ```
+#         @event(PowerOn, 'Pressed')
+#         def HandlePowerButton(button, state):
+#             mainProjector.Send('Power=On\r')
+#             @Wait(30)
+#             def CheckPowerState():
+#                 mainProjector.Send('get Power\r')
+#         ```
+#         ---
 
-        In addition to being used as a one-shot (decorator), Wait can be named and reusable.
+#         In addition to being used as a one-shot (decorator), Wait can be named and reusable.
 
-        Parameters:	
-            - Time (float) – Expiration time of the wait in seconds
-            - Function (function) – Code to execute when Time expires
-        ---
+#         Parameters:	
+#             - Time (float) – Expiration time of the wait in seconds
+#             - Function (function) – Code to execute when Time expires
+#         ---
         
-        ```
-        closeWait = None    # Delay to hide Setup Page
+#         ```
+#         closeWait = None    # Delay to hide Setup Page
 
-        @event(ShowSetup, 'Released')
-        def handleShowSetup(button, state):
-            global closeWait
-            def CloseSetupPage():
-                ConfRoomWall.ShowPage('Main')
-            closeWait = Wait(60, CloseSetupPage)
-            ConfRoomWall.ShowPage('Setup')
-        ```
-        """
+#         @event(ShowSetup, 'Released')
+#         def handleShowSetup(button, state):
+#             global closeWait
+#             def CloseSetupPage():
+#                 ConfRoomWall.ShowPage('Main')
+#             closeWait = Wait(60, CloseSetupPage)
+#             ConfRoomWall.ShowPage('Setup')
+#         ```
+#         """
         
-        self.Function = Function
-        self.Time = Time
-        self._currentTime = Time
-        
-        def wait_wrapper(func=self.Function):
-            func(Time = self.Time, Count = self.Count)
+#         self.Function = Function
+#         self.Time = Time
+#         self.Count = 0 # dummy data
+#         self._currentTime = Time
+    
+#         def wait_wrapper(func=self.Function):
+#             print(self.Time)
+#             print(self.Count)
+#             func(Time = self.Time, Count = self.Count)
             
-    def Add(self, Time: float) -> None:
-        """Add time to current interval.
+#         self._wait_wrapper = wait_wrapper
+            
+#     def __call__(self, *args: Any, **kwds: Any) -> Any:
+#         self._wait_wrapper()
+            
+#     def Add(self, Time: float) -> None:
+#         """Add time to current interval.
 
-        Note - Add() does not modify Time.
+#         Note - Add() does not modify Time.
 
-        Parameters:	Time (float) – Time in seconds
+#         Parameters:	Time (float) – Time in seconds
 
-        ```
-        QueryDelay = Wait(3)
+#         ```
+#         QueryDelay = Wait(3)
 
-        def ErrorRecieved():    # Called by received data handler
-            QueryDelay.Add(1)
-        ```
-        """
-        self._currentTime = self._currentTime + Time
+#         def ErrorRecieved():    # Called by received data handler
+#             QueryDelay.Add(1)
+#         ```
+#         """
+#         self._currentTime = self._currentTime + Time
         
-    def Cancel(self) -> None:
-        """Stop Function from executing when the Time expires.
+#     def Cancel(self) -> None:
+#         """Stop Function from executing when the Time expires.
 
-        ```
-        @event(CloseSetup, 'Released')
-        def CloseSetup(button, state):
-            global closeWait
-            if closeWait:
-                closeWait.Cancel()
-                closeWait = None
-            ConfRoomWall.ShowPage('Main')
-        ```
-        """
-        self._currentTime = 0
+#         ```
+#         @event(CloseSetup, 'Released')
+#         def CloseSetup(button, state):
+#             global closeWait
+#             if closeWait:
+#                 closeWait.Cancel()
+#                 closeWait = None
+#             ConfRoomWall.ShowPage('Main')
+#         ```
+#         """
+#         self._currentTime = 0
         
-    def Change(self, Time: float) -> None:
-        """Set a new Time value for current and subsequent runs of this instance.
+#     def Change(self, Time: float) -> None:
+#         """Set a new Time value for current and subsequent runs of this instance.
 
-        Note - Change() will modify Time.
+#         Note - Change() will modify Time.
 
-        Parameters:	Time (float) – Time in seconds
+#         Parameters:	Time (float) – Time in seconds
 
-        ```
-        @event(buttonObject, 'Pressed')
-        def buttonObjectHandler(button, state):
-            DoSomething()
-            closeWait.Change(60)
-        ```
-        """
-        self.Time = Time
+#         ```
+#         @event(buttonObject, 'Pressed')
+#         def buttonObjectHandler(button, state):
+#             DoSomething()
+#             closeWait.Change(60)
+#         ```
+#         """
+#         self.Time = Time
         
-    def Restart(self) -> None:
-        """Restarts the Wait (i.e. executes the Function in Time seconds). If the Wait is active, Restart() cancels that Wait before starting a new one.
+#     def Restart(self) -> None:
+#         """Restarts the Wait (i.e. executes the Function in Time seconds). If the Wait is active, Restart() cancels that Wait before starting a new one.
 
-        ```
-        @event(buttonObject, 'Pressed')
-        def buttonObjectHandler(button, state):
-            DoSomething()
-            closeWait.Restart()
-        ```
-        """
-        self._currentTime = self.Time
+#         ```
+#         @event(buttonObject, 'Pressed')
+#         def buttonObjectHandler(button, state):
+#             DoSomething()
+#             closeWait.Restart()
+#         ```
+#         """
+#         self._currentTime = self.Time
+    
+import time, numbers, extronlib.services.WaitService as _ext3969ron__WaitService, threading as _ext3969ron__threading, logging as _ext3969ron__logging #, eup.services.Const as _ext3969ron__Const
+import sys, functools
+TESTING = ('unittest' in sys.modules.keys())
+
+class Wait:
+
+    def __init__(self, Time, Function=None):
+        if TESTING:
+            if Function is not None and not callable(Function):
+                raise TypeError('Function parameter is not a callable object')
+            if not isinstance(Time, numbers.Real) or Time < 0:
+                raise TypeError('Invalid Time Type')
+            # @functools.wraps(Function)
+            # def wrapper(*args, **kwargs):
+            #     Function(*args, **kwargs)
+                
+            # self.wrapper = wrapper
+        else:
+            if Function is not None and not callable(Function):
+                raise TypeError('Function parameter is not a callable object')
+            if not isinstance(Time, numbers.Real) or Time < 0:
+                _ext3969ron__logging.error('Wrong Time Type')
+                raise TypeError('Invalid Time Type')
+            self.expireSeconds = Time
+            self.currentExpireTime = time.monotonic() + self.expireSeconds
+            self.expireCb = None
+            self.args = None
+            self.rlock = _ext3969ron__threading.RLock()
+            self.name = self.__class__.__name__
+            self.state = ''
+            if Function:
+                self.name += '.' + Function.__name__
+                self.expireCb = Function
+                self._Wait__add()
+
+    @classmethod
+    def mro(cls):
+        raise NotImplementedError()
+
+    def __call__(self, Function):
+        if TESTING:
+            return Function
+        else:
+            self.name += '.' + Function.__name__
+            self.expireCb = Function
+            self._Wait__add()
+            return Function
+
+    def __add(self):
+        with self.rlock:
+            _ext3969ron__WaitService.AddWaitFunction(self._Wait__callback, self.currentExpireTime, name=self.name)
+
+    def __callback(self):
+        with self.rlock:
+            try:
+                self.expireCb()
+            except:
+                _ext3969ron__logging.exception('Failed to run wait callback function: ' + self.name)
+
+    def Restart(self):
+        with self.rlock:
+            self.currentExpireTime = time.monotonic() + self.expireSeconds
+            if not _ext3969ron__WaitService.ChgIntervalFunction(self._Wait__callback, self.currentExpireTime):
+                self._Wait__add()
+
+    def Cancel(self):
+        with self.rlock:
+            _ext3969ron__WaitService.DeleteWaitFunction(self._Wait__callback)
+
+    def Add(self, Time):
+        if Time < 0:
+            return False
+        with self.rlock:
+            self.currentExpireTime += Time
+            return _ext3969ron__WaitService.ChgIntervalFunction(self._Wait__callback, self.currentExpireTime)
+
+    def Change(self, Time):
+        with self.rlock:
+            self.expireSeconds = Time
+            self.currentExpireTime = time.monotonic() + self.expireSeconds
+            return _ext3969ron__WaitService.ChgIntervalFunction(self._Wait__callback, self.currentExpireTime)
+
+    @property
+    def Time(self):
+        return self.expireSeconds
+
+    @property
+    def Function(self):
+        return self.expireCb
+
+    @Function.setter
+    def Function(self, Function):
+        if self.expireCb:
+            raise RuntimeError('{0} is set to this timer already'.format(self.expireCb))
+        else:
+            self.name += '.' + Function.__name__
+            self.expireCb = Function
     
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##
@@ -649,14 +772,91 @@ def GetSSLContext(alias: str) -> ssl.SSLContext:
 from collections import namedtuple
 _ntp_server = ''
 _TZTuple = namedtuple('_TZTuple', ['id', 'description', 'MSid'])
-# TODO: verify the formatting of the timezone entries
-_tz = _TZTuple('CST','Central Standard Time (US & Canada)','Central Standard Time')
+_tz = _TZTuple('CST','(UTC-06:00/UTC-05:00) Central Time','Central Standard Time')
 _tz_list = \
     [
-        _TZTuple('EST','Eastern Standard Time (US & Canada)','Eastern Standard Time'),
-        _TZTuple('CST','Central Standard Time (US & Canada)','Central Standard Time'),
-        _TZTuple('MST','Mountian Standard Time (US & Canada)','Mountain Standard Time'),
-        _TZTuple('PST','Pacific Standard Time (US & Canada)','Pacific Standard Time')
+        _TZTuple('GMT-12','(UTC-12:00)','Dateline Standard Time'),
+        _TZTuple('GMT-11','(UTC-11:00)','UTC-11'),
+        _TZTuple('GMT-10','(UTC-10:00)','Aleutian Standard Time'),
+        _TZTuple('HST','(UTC-10:00) Hawaii Time','Hawaiian Standard Time'),
+        _TZTuple('MIT','(UTC-09:30) Marquesas Islands Time','Marquesas Standard Time'),
+        _TZTuple('GMT-9','(UTC-09:00)','UTC-09'),
+        _TZTuple('AKST','(UTC-09:00/UTC-08:00) Alaska Time','Alaskan Standard Time'),
+        _TZTuple('GIT','(UTC-09:00) Gambier Islands Time','UTC-09'),
+        _TZTuple('GMT-8','(UTC-08:00)','UTC-08'),
+        _TZTuple('PST','(UTC-08:00/UTC-07:00) Pacific Time','Pacific Standard Time'),
+        _TZTuple('GMT-7','(UTC-07:00)','Mountain Standard Time'),
+        _TZTuple('AZT','(UTC-07:00) Arizona','US Mountain Standard Time'),
+        _TZTuple('MST','(UTC-07:00/UTC-06:00) Mountain Time','Mountain Standard Time'),
+        _TZTuple('GMT-6','(UTC-06:00)','Central America Standard Time'),
+        _TZTuple('CST','(UTC-06:00/UTC-05:00) Central Time','Central Standard Time'),
+        _TZTuple('GMT-5','(UTC-05:00)','Eastern Standard Time'),
+        _TZTuple('PET','(UTC-05:00) Peru Time','SA Pacific Standard Time'),
+        _TZTuple('COT','(UTC-05:00) Columbia Time','SA Pacific Standard Time'),
+        _TZTuple('EST','(UTC-05:00/UTC-04:00) Eastern Time','Eastern Standard Time'),
+        _TZTuple('VET', '(UTC-04:00) Venezuela Time', 'Venezuela Standard Time'),
+        _TZTuple('GMT-4', '(UTC-04:00)', 'Atlantic Standard Time'),
+        _TZTuple('BOT', '(UTC-04:00) Bolivia Time', 'SA Western Standard Time'),
+        _TZTuple('AST', '(UTC-04:00/UTC-03:00) Atlantic Time', 'Atlantic Standard Time'),
+        _TZTuple('NT', '(UTC-03:30/UTC-02:30) Newfoundland Time', 'Newfoundland Standard Time'),
+        _TZTuple('GMT-3', '(UTC-03:00)', 'SA Eastern Standard Time'),
+        _TZTuple('ART', '(UTC-03:00) Argentina Time', 'Argentina Standard Time'),
+        _TZTuple('UYT', '(UTC-03:00) Uruguay Time', 'Argentina Standard Time'),
+        _TZTuple('BRT', '(UTC-03:00) Brasilia Time', 'E. South America Standard Time'),
+        _TZTuple('CLT', '(UTC-03:00/UTC-04:00) Chile Time', 'Magallanes Standard Time'),
+        _TZTuple('GMT-2', '(UTC-02:00)', 'UTC-02'),
+        _TZTuple('GMT-1', '(UTC-01:00)', 'Cape Verde Standard Time'),
+        _TZTuple('AZOST', '(UTC-01:00/UTC+00:00) Azores Time', 'Azores Standard Time'),
+        _TZTuple('GMT+0', '(UTC+00:00)', 'GMT Standard Time'),
+        _TZTuple('WET', '(UTC+00:00/UTC+01:00) Western European Time', 'W. Europe Standard Time'),
+        _TZTuple('GMT+1', '(UTC+01:00)', 'Central Europe Standard Time'),
+        _TZTuple('CET', '(UTC+01:00/UTC+02:00) Central European Time', 'Central European Standard Time'),
+        _TZTuple('WAT', '(UTC+01:00) West Africa Time', 'W. Central Africa Standard Time'),
+        _TZTuple('GMT+2', '(UTC+02:00)', 'E. Europe Standard Time'),
+        _TZTuple('EET', '(UTC+02:00/UTC+03:00) Eastern European Time', 'E. Europe Standard Time'),
+        _TZTuple('CAT', '(UTC+02:00) Central Africa Time', 'W. Central Africa Standard Time'),
+        _TZTuple('GMT+3', '(UTC+03:00)', 'Russian Standard Time'),
+        _TZTuple('FET', '(UTC+03:00) Further Eastern European Time', 'Further Eastern European Time'),
+        _TZTuple('EAT', '(UTC+03:00) Eastern Africa Time', 'E. Africa Standard Time'),
+        _TZTuple('MSK', '(UTC+03:00) Moscow Time', 'Russian Standard Time'),
+        _TZTuple('GMT+4', '(UTC+04:00)', 'Russia Time Zone 3'),
+        _TZTuple('AFT', '(UTC+04:30) Afghanistan Time', 'Afghanistan Standard Time'),
+        _TZTuple('GMT+5', '(UTC+05:00)', 'West Asia Standard Time'),
+        _TZTuple('MSK+2', '(UTC+05:00) Yekaterinburg', 'Ekaterinburg Standard Time'),
+        _TZTuple('IST', '(UTC+05:30) India Time', 'India Standard Time'),
+        _TZTuple('NPT', '(UTC+05:45) Nepal Time', 'Nepal Standard Time'),
+        _TZTuple('GMT+6', '(UTC+06:00)', 'Central Asia Standard Time'),
+        _TZTuple('MSK+3', '(UTC+06:00) Omsk', 'Omsk Standard Time'),
+        _TZTuple('GMT+7', '(UTC+07:00)', 'SE Asia Standard Time'),
+        _TZTuple('MSK+4', '(UTC+07:00) Krasnoyarsk', 'North Asia Standard Time'),
+        _TZTuple('THA', '(UTC+07:00) Thailand Time', 'SE Asia Standard Time'),
+        _TZTuple('GMT+8', '(UTC+08:00)', 'North Asia East Standard Time'),
+        _TZTuple('HKT', '(UTC+08:00) Hong Kong Time', 'China Standard Time'),
+        _TZTuple('AWST', '(UTC+08:00) Australia Western Time', 'W. Australia Standard Time'),
+        _TZTuple('CT', '(UTC+08:00) China Time', 'China Standard Time'),
+        _TZTuple('MSK+5', '(UTC+08:00) Irkutsk', 'North Asia East Standard Time'),
+        _TZTuple('GMT+9', '(UTC+09:00)', 'Transbaikal Standard Time'),
+        _TZTuple('KST', '(UTC+09:00) Korea Time', 'Korea Standard Time'),
+        _TZTuple('JST', '(UTC+09:00) Japan Time', 'Tokyo Standard Time'),
+        _TZTuple('MSK+6', '(UTC+09:00) Yakutsk', 'Yakutsk Standard Time'),
+        _TZTuple('ACST', '(UTC+09:30) Australia Central Time', 'Cen. Australia Standard Time'),
+        _TZTuple('ACST+D', '(UTC+09:30) Australia Central Time (DST observed)', 'AUS Central Standard Time'),
+        _TZTuple('GMT+10', '(UTC+10:00)', 'West Pacific Standard Time'),
+        _TZTuple('AEST', '(UTC+10:00) Australia Eastern Time', 'E. Australia Standard Time'),
+        _TZTuple('AEST+D', '(UTC+10:00) Australia Eastern Time (DST observed)', 'AUS Eastern Standard Time'),
+        _TZTuple('MSK+7', '(UTC+10:00) Vladivostok', 'Vladivostok Standard Time'),
+        _TZTuple('LHST', '(UTC+10:30/UTC+11:00) Lord Howe Time', 'Lord Howe Standard Time'),
+        _TZTuple('GMT+11', '(UTC+11:00)', 'Central Pacific Standard Time'),
+        _TZTuple('MSK+8', '(UTC+11:00) Magadan', 'Magadan Standard Time'),
+        _TZTuple('NFT', '(UTC+12:00/UTC+11:00) Norfolk Time', 'Norfolk Standard Time'),
+        _TZTuple('GMT+12', '(UTC+12:00)', 'UTC+12'),
+        _TZTuple('NZST', '(UTC+12:00/UTC+13:00) New Zealand Time', 'New Zealand Standard Time'),
+        _TZTuple('CHAST', '(UTC+12:45/UTC+13:45) Chatham Time', 'Chatham Islands Standard Time'),
+        _TZTuple('GMT+13', '(UTC+13:00)', 'UTC+13'),
+        _TZTuple('PHOT', '(UTC+13:00) Phoenix Islands Time', 'UTC+13'),
+        _TZTuple('SST', '(UTC+13:00/UTC+14:00) Samoa Time', 'Samoa Standard Time'),
+        _TZTuple('GMT+14', '(UTC+14:00)', 'Line Islands Standard Time'),
+        _TZTuple('LINT', '(UTC+14:00) Line Islands Time', 'Line Islands Standard Time')
     ]
 
 _system_time = datetime.now() # add a timezone to this
@@ -831,13 +1031,29 @@ def ProgramLog(Entry: str, Severity: str = 'error') -> None:
     
     dt = datetime.now()
     if Severity == 'error':
-        _ProgramLog += '[{t}] ERROR - {e}\n'.format(t = dt.isoformat(), e=Entry)
+        LogStatement = '[{t}] ERROR - {e}\n'.format(t = dt.isoformat(), e=Entry)
     elif Severity == 'warning':
-        _ProgramLog += '[{t}] WARNING - {e}\n'.format(t = dt.isoformat(), e=Entry)
+        LogStatement = '[{t}] WARNING - {e}\n'.format(t = dt.isoformat(), e=Entry)
     elif Severity == 'info':
-        _ProgramLog += '[{t}] INFO - {e}\n'.format(t = dt.isoformat(), e=Entry)
+        LogStatement = '[{t}] INFO - {e}\n'.format(t = dt.isoformat(), e=Entry)
     else:
         raise ValueError("Severity must be either 'error', 'warning', or 'info'")
+
+    _ProgramLog += LogStatement
+    if TESTING:
+        log =  open('.\TEST_LOG.log', 'at')
+        log.write(LogStatement)
+        log.close()
+    else:
+        print(LogStatement)
+    
+def _ReadProgramLog():
+    global _ProgramLog
+    return _ProgramLog
+
+def _ClearProgramLog():
+    global _ProgramLog
+    _ProgramLog = ''
 
 def SaveProgramLog(path: Union[File, str]=None) -> None:
     """Save the ProgramLog to the specified User file system location.
@@ -850,6 +1066,7 @@ def SaveProgramLog(path: Union[File, str]=None) -> None:
 
     Parameters:	path (File or string) – The file path to save the log to.
     """
+    global _ProgramLog
     if path == None:
         dt = datetime.now()
         path = 'ProgramLog {year}-{month}-{day} {hr}{min}{sec}.txt'.format(

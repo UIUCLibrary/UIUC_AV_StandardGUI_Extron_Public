@@ -251,7 +251,10 @@ class EthernetClientInterface:
         
         self.Credentials = Credentials
         self.Hostname = Hostname
-        self.IPAddress = socket.gethostbyname(Hostname)
+        try:
+            self.IPAddress = socket.gethostbyname(Hostname)
+        except:
+            self.IPAddress = '0.0.0.0'
         self.IPPort = IPPort
         if Protocol not in self._valid_protocols:
             raise ValueError('Protocol must be one of TCP, UDP, or SSH')
@@ -339,7 +342,7 @@ class EthernetClientInterface:
     def SendAndWait(self, 
                     data: Union[bytes, str], 
                     timeout: float, 
-                    delimiter: Union[int, bytes, re]) -> bytes:
+                    **delimiter: Union[int, bytes, re]) -> bytes:
         """Send data to the controlled device and wait (blocking) for response. It returns after timeout seconds expires or immediately if the optional condition is satisfied.
 
         Note
