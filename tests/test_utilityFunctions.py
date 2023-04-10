@@ -1,5 +1,11 @@
 import unittest
 
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
+
 ## test imports ================================================================
 from utilityFunctions import TimeIntToStr, Log, DictValueSearchByKey, RunAsync, SortKeys
 from extronlib.system import _ReadProgramLog, _ClearProgramLog

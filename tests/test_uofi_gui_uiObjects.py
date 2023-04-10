@@ -1,7 +1,13 @@
 import unittest
-import json
-from typing import Dict
 import importlib
+
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
+from typing import Dict
+import json
 
 ## test imports ----------------------------------------------------------------
 from uofi_gui import GUIController

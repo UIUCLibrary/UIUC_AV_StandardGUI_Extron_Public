@@ -1,5 +1,11 @@
 import unittest
 import importlib
+
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
 from typing import Dict, Tuple, List, Callable, Union, cast
 
 ## test imports ----------------------------------------------------------------

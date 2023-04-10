@@ -1,6 +1,12 @@
 import unittest
-from typing import Dict, Tuple, List, Callable, Union, cast
 import importlib
+
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
+from typing import Dict, Tuple, List, Callable, Union, cast
 import random
 
 ## test imports ----------------------------------------------------------------

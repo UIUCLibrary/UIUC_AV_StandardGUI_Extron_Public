@@ -3,6 +3,12 @@ from unittest.mock import MagicMock
 import os
 import importlib
 
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
+
 ## test imports ----------------------------------------------------------------
 from uofi_gui import GUIController
 from uofi_gui.uiObjects import ExUIDevice

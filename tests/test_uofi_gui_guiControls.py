@@ -1,13 +1,17 @@
 import unittest
 import importlib
 
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
 ## test imports ----------------------------------------------------------------
 from uofi_gui import GUIController, ExProcessorDevice
 from uofi_gui.uiObjects import ExUIDevice
 from uofi_gui.systemHardware import SystemPollingController, SystemHardwareController
-import sys
+
 import test_settings as settings
-del sys.modules['settings']
 import test_settings as settings_no_primary
 
 from extronlib.device import ProcessorDevice, UIDevice

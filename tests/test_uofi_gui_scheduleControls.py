@@ -1,6 +1,12 @@
 import unittest
 import importlib
 
+import sys
+sys.path.append(".\\src")
+sys.path.append(".\\tests")
+sys.path.append(".\\tests\\reqs")
+
+
 ## test imports ----------------------------------------------------------------
 import os
 from uofi_gui import GUIController
