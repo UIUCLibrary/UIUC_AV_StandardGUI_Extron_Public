@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Dict, Tuple, List, Union, Callable, cast
 if TYPE_CHECKING: # pragma: no cover
     from uofi_gui import GUIController
     from uofi_gui.uiObjects import ExUIDevice
-    from uofi_gui.sourceControls import MatrixTuple, destination
+    from uofi_gui.sourceControls import MatrixTuple, Destination
 
 ## Begin ControlScript Import --------------------------------------------------
 from extronlib import event

@@ -1,5 +1,5 @@
 
-import secrets_hardware
+import test_secrets as secrets_hardware
 
 ##==============================================================================
 ## These are per system configuration variables, modify these as required

@@ -57,7 +57,7 @@ class Email:
         self._subject = subject
 
 class File:
-    _pathroot = './emulatedFileSystem/SFTP'
+    _pathroot = './tests/emFS/SFTP'
     _path = '/'
     
     def __init__(self, Filename: str, mode: str='r', encoding: str=None, newline: str=None) -> None:
