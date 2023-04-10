@@ -41,7 +41,7 @@ class ExUIDevice_TestClass(unittest.TestCase):
         self.TestGUIController.Initialize()
     
     def getCtlDict(self) -> Dict:
-        f = open('./emulatedFileSystem/SFTP{}'.format(self.TestGUIController.CtlJSON), 'r')
+        f = open('./tests/reqs/emFS/SFTP{}'.format(self.TestGUIController.CtlJSON), 'r')
         ctlStr = f.read()
         f.close()
         ctlDict = json.loads(ctlStr)

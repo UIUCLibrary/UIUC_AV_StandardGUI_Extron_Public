@@ -3,7 +3,7 @@
     [switch]$append=$false,
     [switch]$blank=$false,
     [string]$path=".",
-    [string]$testPath="unittests"
+    [string]$testPath="tests"
 )
 
 Set-Location $path
@@ -23,6 +23,9 @@ Write-Output @"
 Discovering and running unit tests
 ----------------------------------------------------------------------
 "@
+
+$env:PYTHONPATH = '.\\src;.\\tests;.\\tests\\reqs'
+
 if ($module -eq '') {
     if ($append) {
         coverage run --source=uofi_gui,utilityFunctions --append -m unittest discover -v -b -s .\$testPath\ -p test_*.py
@@ -32,9 +35,9 @@ if ($module -eq '') {
 } else {
     $testModule = $module.Replace('.', '_')
     if ($append) {
-        coverage run --source=$module --append --context=$module -m unittest discover -v -b -s .\$testPath\ -p test_$testModule.py
+        coverage run --source=$module --append --context=$module -m unittest -b -v test_$testModule
     } else {
-        coverage run --source=$module --context=$module -m unittest discover -v -b -s .\$testPath\ -p test_$testModule.py
+        coverage run --source=$module --context=$module -m unittest -b -v test_$testModule
     }
 }
 Write-Output @"

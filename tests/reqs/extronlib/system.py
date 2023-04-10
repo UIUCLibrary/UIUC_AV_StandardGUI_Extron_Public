@@ -57,7 +57,7 @@ class Email:
         self._subject = subject
 
 class File:
-    _pathroot = './tests/emFS/SFTP'
+    _pathroot = './tests/reqs/emFS/SFTP'
     _path = '/'
     
     def __init__(self, Filename: str, mode: str='r', encoding: str=None, newline: str=None) -> None:
@@ -193,7 +193,7 @@ class File:
         self._file_object.writelines(seq)
         
 class RFile:
-    _pathroot = './emulatedFileSystem/SFTP'
+    _pathroot = './tests/reqs/emFS/Restricted'
     _path = '/'
     
     def __init__(self, Filename: str, mode: str='r', encoding: str=None, newline: str=None) -> None:
