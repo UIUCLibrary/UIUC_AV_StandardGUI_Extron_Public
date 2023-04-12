@@ -31,8 +31,8 @@ class ScheduleController_TestClass(unittest.TestCase): # rename for module to be
         return super().setUp()
     
     def tearDown(self):
-        if os.path.exists('./emulatedFileSystem/SFTP/user/states/room_schedule.json'):
-            os.remove('./emulatedFileSystem/SFTP/user/states/room_schedule.json')
+        if os.path.exists('./tests/reqs/emFS/SFTP/user/states/room_schedule.json'):
+            os.remove('./tests/reqs/emFS/SFTP/user/states/room_schedule.json')
     
     def test_ScheduleController_Type(self): # configure a test case for each function in the module
         self.assertIsInstance(self.TestScheduleController, AutoScheduleController)
@@ -302,13 +302,13 @@ class ScheduleController_TestClass(unittest.TestCase): # rename for module to be
                 self.fail("__SaveSchedule() raised {} unexpectedly!".format(type(inst)))
                 
         with self.subTest(con='Save - Existing Schedule'):
-            shutil.copyfile('./emulatedFileSystem/SFTP/user/states/test_states/test_room_schedule.json', './emulatedFileSystem/SFTP/user/states/test_room_schedule_write.json')
+            shutil.copyfile('./tests/reqs/emFS/SFTP/user/states/test_states/test_room_schedule.json', './tests/reqs/emFS/SFTP/user/states/test_room_schedule_write.json')
             self.TestScheduleController._AutoScheduleController__scheduleFilePath = '/user/states/test_room_schedule_write.json'
             try:
                 self.TestScheduleController._AutoScheduleController__SaveSchedule()
             except Exception as inst:
                 self.fail("__SaveSchedule() raised {} unexpectedly!".format(type(inst)))
-            os.remove('./emulatedFileSystem/SFTP/user/states/test_room_schedule_write.json')
+            os.remove('./tests/reqs/emFS/SFTP/user/states/test_room_schedule_write.json')
     
     def test_ScheduleController_PRIV_LoadSchedule_NoFile(self):
         try:

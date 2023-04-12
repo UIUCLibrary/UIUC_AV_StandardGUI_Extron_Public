@@ -557,6 +557,7 @@ class SystemPollingController_TestClass(unittest.TestCase):
                     self.TestPollController.SetPollingMode(con)
     
     def test_SystemPollingController_AddPolling(self):
+        importlib.reload(settings)
         self.TestGUIController.Initialize()
         TestHardware = self.TestGUIController.Hardware['MON001']
         contextList = \
@@ -590,6 +591,7 @@ class SystemPollingController_TestClass(unittest.TestCase):
         
     
     def test_SystemPollingController_RemovePolling(self):
+        importlib.reload(settings)
         self.TestGUIController.Initialize()
         TestHardware = self.TestGUIController.Hardware['MON001']
         self.TestPollController.Polling = []
@@ -606,6 +608,7 @@ class SystemPollingController_TestClass(unittest.TestCase):
         self.assertEqual(len(self.TestPollController.Polling), 0)
     
     def test_SystemPollingController_UpdatePolling(self):
+        importlib.reload(settings)
         self.TestGUIController.Initialize()
         TestHardware = self.TestGUIController.Hardware['MON001']
         self.TestPollController.Polling = []

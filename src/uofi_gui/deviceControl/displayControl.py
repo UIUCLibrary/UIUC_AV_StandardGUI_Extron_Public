@@ -49,6 +49,18 @@ class DisplayController:
                     if k == 'mon':
                         self.__Controls[k][str(i)].update({'Vol': self.UIHost.Slds['Tech-Display-mon-{}-Vol'.format(str(i))]})
         
+        self.__ControlList = []
+        for hw_type, group_dict in self.__Controls.items():
+            for group, ctl_dict in group_dict.items():
+                for ctl_type, ctl in ctl_dict.items():
+                    ctl.CtlType = ctl_type
+                    ctl.HwType = hw_type
+                    ctl.CtlGroup = group
+                    # disable all controls as we add them to the the control list
+                    # will enable controls tied to active displays
+                    ctl.SetEnable(False)
+                    self.__ControlList.append(ctl)
+        
         self.Destinations = {}
         conf_assign = 1
         mon_assign = 1
@@ -63,19 +75,20 @@ class DisplayController:
                 self.__Labels['conf'][str(conf_assign)].SetText(dest['name'])
                 if dest['type'] == 'conf':
                     for key, ctl in self.__Controls['conf'][str(conf_assign)].items():
+                        ctl.DestID = dest['id']
+                        ctl.SetEnable(True)
                         if key == 'Src':
                             ctl.SetEnable(False)
                             ctl.SetVisible(False)
-                        else:
-                            ctl.DestID = dest['id']
-                            if key == 'On' or key == 'Off':
-                                ctl.ConfControlType = 'switcher'
+                        elif key == 'On' or key == 'Off':
+                            ctl.ConfControlType = 'switcher'
                 elif dest['type'] == 'c-conf':
                     self.Destinations[dest['id']]['hw_type'] = 'conf'
                     self.Destinations[dest['id']]['ctl_group'] = str(conf_assign)
                     self.__Labels['conf'][str(conf_assign)].SetText(dest['name'])
                     for key, ctl in self.__Controls['conf'][str(conf_assign)].items():
                         ctl.DestID = dest['id']
+                        ctl.SetEnable(True)
                         if key == 'On' or key == 'Off':
                             ctl.ConfControlType = 'display'
                 conf_assign += 1
@@ -85,6 +98,7 @@ class DisplayController:
                 self.__Labels['mon'][str(mon_assign)].SetText(dest['name'])
                 for key, ctl in self.__Controls['mon'][str(mon_assign)].items():
                     ctl.DestID = dest['id']
+                    ctl.SetEnable(True)
                     # Set range for monitor volume slider based on hardware options
                     if key == 'Vol' and hasattr(self.Destinations[dest['id']]['hw'], 'VolumeRange'):
                         ctl.SetRange(*self.Destinations[dest['id']]['hw'].VolumeRange)
@@ -100,13 +114,14 @@ class DisplayController:
                         if key == 'Stop' or key == 'Up' or key == 'Dn':
                             ctl.SetEnable(False)
                             ctl.SetVisible(False)
-                        else:
-                            ctl.DestID = dest['id']
+                        ctl.DestID = dest['id']
+                        ctl.SetEnable(True)
                 elif dest['type'] == 'proj+scn':
                     # configure screen controls
                     self.__Labels['scn'][str(proj_assign)].SetText('{} Screen'.format(dest['name']))
                     for ctl in self.__Controls['proj'][str(proj_assign)].values():
                         ctl.DestID = dest['id']
+                        ctl.SetEnable(True)
                         
                     # instanciate projector screen relay control
                     self.Destinations[dest['id']]['Scn'] = {}
@@ -124,15 +139,6 @@ class DisplayController:
                         pass
                 
                 proj_assign += 1
-        
-        self.__ControlList = []
-        for hw_type, group_dict in self.__Controls.items():
-            for group, ctl_dict in group_dict.items():
-                for ctl_type, ctl in ctl_dict.items():
-                    ctl.CtlType = ctl_type
-                    ctl.HwType = hw_type
-                    ctl.CtlGroup = group
-                    self.__ControlList.append(ctl)
         
         @event([ctl for ctl in self.__ControlList if type(ctl) is Slider], ['Changed']) # pragma: no cover
         def sliderFillHandler(control: 'Slider', action: str, value: float):
@@ -219,6 +225,10 @@ class DisplayController:
             control.SetFill(value)
                 
     def __DisplayControlButtonHandler(self, control: Union['Button', 'Slider'], action: str, value: float=None):
+        if control.Enabled is False:
+            # do not process disabled buttons
+            return
+        
         if action == 'Pressed':
             if type(control) == Button:
                 if control.CtlType == 'Mute':
@@ -250,7 +260,11 @@ class DisplayController:
                 control.SetBlinking('Medium', [0,1])
             elif control.CtlType == 'Src':
                 # set display back to default input source
-                self.SetDisplaySource(control.DestID)
+                if control.HwType == 'conf' and control.ConfControlType == 'switcher':
+                    # There is no source to set on the conference display so do nothing
+                    pass
+                else:
+                    self.SetDisplaySource(control.DestID)
                 @Wait(3) # pragma: no cover
                 def delayFeedbackHandler():
                     control.SetState(0)
@@ -283,9 +297,8 @@ class DisplayController:
                     self.DisplayMute = (control.DestID, 'On')
                 else:
                     self.DisplayMute = (control.DestID, 'Off')
-            elif control.CtlType == 'Vol':
+            elif control.CtlType == 'Vol' and value is not None:
                 # Log('Slider - new value = {}'.format(value))
-                # set display volume
                 self.DisplayVolume = (control.DestID, value)
                 control.SetFill(value)
     
@@ -318,7 +331,7 @@ class DisplayController:
             raise TypeError("Dest must either by a string destination ID or a Destination object")
         
         if Hw is None:
-            raise LookupError('Destination ({}) not found'.format(dest))
+            raise LookupError('Destination hardware ({}) not found'.format(dest))
         
         qual = Hw.SourceCommand.get('qualifier', None)
         

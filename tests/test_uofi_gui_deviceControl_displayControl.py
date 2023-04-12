@@ -36,6 +36,7 @@ class DisplayController_TestClass(unittest.TestCase): # rename for module to be 
         self.assertIsInstance(self.TestDispController, DisplayController)
     
     def test_DisplayController_InitOtherTypes(self):
+        importlib.reload(settings)
         settings.destinations = \
             [
                 {
@@ -44,8 +45,8 @@ class DisplayController_TestClass(unittest.TestCase): # rename for module to be 
                     'output': 1,
                     'type': 'c-conf',
                     'rly': None,
-                    'group-work-src': 'WPD001',
-                    'adv-layout': {
+                    'groupWrkSrc': 'WPD001',
+                    'advLayout': {
                         "row": 0,
                         "pos": 1
                     }
@@ -56,8 +57,8 @@ class DisplayController_TestClass(unittest.TestCase): # rename for module to be 
                     "output": 3,
                     "type": "proj",
                     "rly": [1, 2],
-                    "group-work-src": "WPD001",
-                    "adv-layout": {
+                    "groupWrkSrc": "WPD001",
+                    "advLayout": {
                         "row": 0,
                         "pos": 0
                     }
@@ -68,8 +69,8 @@ class DisplayController_TestClass(unittest.TestCase): # rename for module to be 
                     "output": 2,
                     "type": "mon",
                     "rly": None,
-                    "group-work-src": "WPD002",
-                    "adv-layout": {
+                    "groupWrkSrc": "WPD002",
+                    "advLayout": {
                         "row": 1,
                         "pos": 0
                     }
@@ -80,8 +81,8 @@ class DisplayController_TestClass(unittest.TestCase): # rename for module to be 
                     "output": 4,
                     "type": "mon",
                     "rly": None,
-                    "group-work-src": "WPD003",
-                    "adv-layout": {
+                    "groupWrkSrc": "WPD003",
+                    "advLayout": {
                         "row": 1,
                         "pos": 1
                     }

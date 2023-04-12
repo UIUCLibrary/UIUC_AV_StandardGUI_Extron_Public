@@ -33,14 +33,15 @@ class CameraController_TestClass(unittest.TestCase): # rename for module to be t
         return super().setUp()
     
     def tearDown(self):
-        if os.path.exists('./emulatedFileSystem/SFTP/user/states/camera_presets.json'):
-            os.remove('./emulatedFileSystem/SFTP/user/states/camera_presets.json')
+        if os.path.exists('./tests/reqs/emFS/SFTP/user/states/camera_presets.json'):
+            os.remove('./tests/reqs/emFS/SFTP/user/states/camera_presets.json')
     
     def test_CameraController_Init_BadCamHardwareMatch(self):
+        importlib.reload(settings)
         settings.cameras.append({'Id':'CAM003', 'Name':'Bad Camera', 'Input': 3})
         with self.assertRaises(KeyError):
-            self.BadGUIController = GUIController(settings, self.TestCtls, self.TestTPs)
-            self.BadGUIController.Initialize()
+            BadGUIController = GUIController(settings, self.TestCtls, self.TestTPs)
+            BadGUIController.Initialize()
         settings.cameras.pop()
     
     def test_CameraController_Type(self):
@@ -233,31 +234,33 @@ class CameraController_TestClass(unittest.TestCase): # rename for module to be t
         import shutil
         
         with self.subTest(condition='Save - No Existing Presets'):
-            if File.Exists(self.TestCamController._CameraController__PresetsFilePath):
-                File.DeleteFile(self.TestCamController._CameraController__PresetsFilePath)
+            if os.path.exists(self.TestCamController._CameraController__PresetsFilePath):
+                os.remove(self.TestCamController._CameraController__PresetsFilePath)
             try:
                 self.TestCamController.SavePresetStates()
             except Exception as inst:
                 self.fail('SavePresetStates raised {} unexpectedly!'.format(type(inst)))
                 
         with self.subTest(condition='Save - Existing Presets'):
-            shutil.copyfile('./emulatedFileSystem/SFTP/user/states/test_states/test_camera_presets_1.json', './emulatedFileSystem/SFTP/user/states/test_camera_presets_write.json')
+            shutil.copyfile('./tests/reqs/emFS/SFTP/user/states/test_states/test_camera_presets_1.json', './tests/reqs/emFS/SFTP/user/states/test_camera_presets_write.json')
             self.TestCamController._CameraController__PresetsFilePath = '/user/states/test_camera_presets_write.json'
             try:
                 self.TestCamController.SavePresetStates()
             except Exception as inst:
                 self.fail("__SaveSchedule() raised {} unexpectedly!".format(type(inst)))
-            os.remove('./emulatedFileSystem/SFTP/user/states/test_camera_presets_write.json')
+            os.remove('./tests/reqs/emFS/SFTP/user/states/test_camera_presets_write.json')
         
         with self.subTest(condition='Save - Some Existing Presets'):
-            os.remove('./emulatedFileSystem/SFTP/user/states/test_camera_presets_write.json')
-            shutil.copyfile('./emulatedFileSystem/SFTP/user/states/test_states/test_camera_presets_2.json', './emulatedFileSystem/SFTP/user/states/test_camera_presets_write.json')
+            if os.path.exists('./tests/reqs/emFS/SFTP/user/states/test_camera_presets_write.json'):
+                os.remove('./tests/reqs/emFS/SFTP/user/states/test_camera_presets_write.json')
+            
+            shutil.copyfile('./tests/reqs/emFS/SFTP/user/states/test_states/test_camera_presets_2.json', './tests/reqs/emFS/SFTP/user/states/test_camera_presets_write.json')
             self.TestCamController._CameraController__PresetsFilePath = '/user/states/test_camera_presets_write.json'
             try:
                 self.TestCamController.SavePresetStates()
             except Exception as inst:
                 self.fail("__SaveSchedule() raised {} unexpectedly!".format(type(inst)))
-            os.remove('./emulatedFileSystem/SFTP/user/states/test_camera_presets_write.json')
+            os.remove('./tests/reqs/emFS/SFTP/user/states/test_camera_presets_write.json')
     
     def test_CameraController_LoadPresetStates_NoFile(self):
         try:
