@@ -1,2 +1,5 @@
-/coverage_reports/* linguist-generated
+# ignore coverage reports as generate files
+coverage_reports/* linguist-generated
+
+# ignore documentation directory as documentation files
 /docs/* linguist-documentation
