@@ -198,9 +198,9 @@ class GUIController:
             self.Hardware[self.PrimarySwitcherId].interface.Set('VideoMute', 'Video & Sync', None)
                 
         # power off displays
-        for destId in self.Destinations.keys():
+        for dest in self.Destinations:
             try:
-                self.TP_Main.DispCtl.SetDisplayPower(destId, 'Off')
+                self.TP_Main.DispCtl.SetDisplayPower(dest['Id'], 'Off')
             except LookupError:
                 # display does not have hardware to power on or off
                 pass
