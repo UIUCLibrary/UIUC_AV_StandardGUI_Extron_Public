@@ -548,7 +548,7 @@ hardware = [
          {
             'SwitchCommand': 
                {
-                  'command': 'SourcePresetListSelect',
+                  'command': 'SourcePresetsListSelect',
                   'qualifier': {'NDI Source': 'True'}
                }
          }

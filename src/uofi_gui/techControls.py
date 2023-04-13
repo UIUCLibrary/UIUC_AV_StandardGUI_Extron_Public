@@ -273,7 +273,7 @@ class TechMenuController:
     # Private Methods ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     def __GetCPUUsage(self) -> float: # pragma: no cover
-        if TESTING:
+        if TESTING: # can't test this properly on a windows machine so return fixed values during test runs
             return 42.17
         
         sub = Popen(('grep', 'cpu', '/proc/stat'), stdout=PIPE, stderr=PIPE)
@@ -282,7 +282,7 @@ class TechMenuController:
         return round((top_vals[0] + top_vals[2]) * 100. /(top_vals[0] + top_vals[2] + top_vals[3]), 2)
 
     def __GetRAMUsage(self) -> Tuple[float, ...]: # pragma: no cover
-        if TESTING:
+        if TESTING: # can't test this properly on a windows machine so return fixed values during test runs
             return (20, 25, 45)
         
         filepath = "/proc/meminfo"

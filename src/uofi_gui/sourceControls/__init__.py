@@ -703,7 +703,6 @@ class SourceController:
         if mode == 'untie':
             cmdInput = 0
             cmdTieType = 'Audio/Video'
-            # TODO: May have to check for existing ties before knowing if this will work
         else:
             cmdInput = srcNum
             cmdTieType = cmdDict[mode]

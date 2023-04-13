@@ -43,7 +43,6 @@ from utilityFunctions import DictValueSearchByKey, Log, RunAsync, debug, SortKey
 ##
 ## Begin Class Definitions -----------------------------------------------------
 
-# TODO: need to make sure that schedule changes properly propigate across all UIHosts
 class AutoScheduleController:
     def __init__(self, UIHost: 'ExUIDevice') -> None:
         self.UIHost = UIHost
@@ -150,7 +149,7 @@ class AutoScheduleController:
         self.__AutoStartClock = Clock(['12:00:00'], None, self.__ScheduleStartHandler)
         self.__AutoShutdownClock = Clock(['12:00:00'], None, self.__ScheduleShutdownHandler)
         
-        self.__LoadSchedule()
+        self.LoadSchedule()
         
         @event([self.__toggle_start, self.__toggle_shutdown], ['Released']) # pragma: no cover
         def ToggleHandler(button: 'Button', action: str):
@@ -210,7 +209,7 @@ class AutoScheduleController:
         elif button.Value == 'shutdown' and self.AutoShutdown is False:
             self.AutoShutdown = True
             button.SetState(1)
-        self.__SaveSchedule()
+        self.SaveSchedule()
     
     def __PatternEditHandler(self, button: 'Button', action: str):
         if action == 'Pressed':
@@ -226,7 +225,7 @@ class AutoScheduleController:
         self.__activity_start.SetCurrent(button)
         re_match = re.match(r'Schedule-Start-Act-(\w+)', button.Name)
         self.__pattern_start.Activity = re_match.group(1)
-        self.__SaveSchedule()
+        self.SaveSchedule()
     
     def __DayOfWeekSelectHandler(self, button: 'Button', action: str):
         if button.State == 0:
@@ -323,7 +322,7 @@ class AutoScheduleController:
             elif self.__editor_pattern.Mode == 'shutdown':
                 self.__pattern_shutdown.Pattern = pat
                 self.__UpdatePattern('shutdown')
-            self.__SaveSchedule()
+            self.SaveSchedule()
             self.UIHost.HidePopup(self.__edit_modal)
             button.SetState(0)
         
@@ -368,124 +367,6 @@ class AutoScheduleController:
                                           a = Pattern['Time']['ampm'])
         
         return text
-    
-    def __SaveSchedule(self):
-        # only need to save the preset names, presets are stored presistently on camera
-        if File.Exists(self.__scheduleFilePath):
-            # file exists -> read file to object, modify object, save object to file
-            #### read file to object
-            scheduleFile = File(self.__scheduleFilePath, 'rt')
-            scheduleString = scheduleFile.read()
-            scheduleObj = json.loads(scheduleString)
-            scheduleFile.close()
-            
-            #### modify object
-            scheduleObj['auto_start']['enabled'] = int(self.AutoStart)
-            scheduleObj['auto_start']['pattern'] = self.__pattern_start.Pattern
-            scheduleObj['auto_start']['mode'] = self.__pattern_start.Activity
-            scheduleObj['auto_shutdown']['enabled'] = int(self.AutoShutdown)
-            scheduleObj['auto_shutdown']['pattern'] = self.__pattern_shutdown.Pattern
-            
-            #### save object to file
-            scheduleFile = File(self.__scheduleFilePath, 'wt')
-            scheduleFile.write(json.dumps(scheduleObj))
-            scheduleFile.close()
-            
-        else:
-            # file does not exist -> create object, save object to file
-            #### create object
-            scheduleObj = \
-                {
-                    'auto_start': 
-                        {
-                            'enabled': 0,
-                            'pattern': {},
-                            'mode': ''
-                        },
-                    'auto_shutdown':
-                        {
-                            'enabled': 0,
-                            'pattern': {}
-                        }
-                }
-            scheduleObj['auto_start']['enabled'] = int(self.AutoStart)
-            scheduleObj['auto_start']['pattern'] = self.__pattern_start.Pattern
-            scheduleObj['auto_start']['mode'] = self.__pattern_start.Activity
-            scheduleObj['auto_shutdown']['enabled'] = int(self.AutoShutdown)
-            scheduleObj['auto_shutdown']['pattern'] = self.__pattern_shutdown.Pattern
-            
-            #### save object to file
-            scheduleFile = File(self.__scheduleFilePath, 'xt')
-            scheduleFile.write(json.dumps(scheduleObj))
-            scheduleFile.close()
-            
-        if bool(scheduleObj['auto_start']['enabled']):
-            self.__AutoStartClock.Enable()
-        else:
-            self.__AutoStartClock.Disable()
-            
-        self.__AutoStartClock.SetDays(scheduleObj['auto_start']['pattern']['Days'])
-        self.__AutoStartClock.SetTimes([self.__ClockTime(scheduleObj['auto_start']['pattern']['Time'])])
-        
-        if bool(scheduleObj['auto_shutdown']['enabled']):
-            self.__AutoShutdownClock.Enable()
-        else:
-            self.__AutoShutdownClock.Disable()
-            
-        self.__AutoShutdownClock.SetDays(scheduleObj['auto_shutdown']['pattern']['Days'])
-        self.__AutoShutdownClock.SetTimes([self.__ClockTime(scheduleObj['auto_shutdown']['pattern']['Time'])])
-        
-    
-    def __LoadSchedule(self):
-        # only need to load the preset names, presets are stored presistently on camera
-        if File.Exists(self.__scheduleFilePath):
-            #### read file to object
-            scheduleFile = File(self.__scheduleFilePath, 'rt')
-            scheduleString = scheduleFile.read()
-            scheduleObj = json.loads(scheduleString)
-            # Log('JSON Obj: {}'.format(scheduleObj))
-            scheduleFile.close()
-            
-            #### iterate over objects and load presets
-            self.AutoStart = bool(scheduleObj['auto_start']['enabled'])
-            self.__pattern_start.Pattern = scheduleObj['auto_start']['pattern']
-            self.__pattern_start.Activity = scheduleObj['auto_start']['mode']
-            self.AutoShutdown =  bool(scheduleObj['auto_shutdown']['enabled'])
-            self.__pattern_shutdown.Pattern = scheduleObj['auto_shutdown']['pattern']
-
-        else:
-            Log('No presets file exists')
-            
-            # load defaults
-            self.AutoStart = False
-            self.__pattern_start.Pattern = self.__default_pattern
-            self.__pattern_start.Activity = 'share'
-            self.AutoShutdown =  False
-            self.__pattern_shutdown.Pattern = self.__default_pattern
-            
-        if self.AutoStart:
-            self.__toggle_start.SetState(1)
-            self.__AutoStartClock.Enable()
-        else:
-            self.__toggle_start.SetState(0)
-            self.__AutoStartClock.Disable()
-            
-        if self.AutoShutdown:
-            self.__toggle_shutdown.SetState(1)
-            self.__AutoShutdownClock.Enable()
-        else:
-            self.__toggle_shutdown.SetState(0)
-            self.__AutoShutdownClock.Disable()
-        
-        self.__activity_start.SetCurrent(self.UIHost.Btns['Schedule-Start-Act-{}'.format(self.__pattern_start.Activity)])
-        
-        self.__AutoStartClock.SetDays(self.__pattern_start.Pattern['Days'])
-        self.__AutoStartClock.SetTimes([self.__ClockTime(self.__pattern_start.Pattern['Time'])])
-            
-        self.__AutoShutdownClock.SetDays(self.__pattern_shutdown.Pattern['Days'])
-        self.__AutoShutdownClock.SetTimes([self.__ClockTime(self.__pattern_shutdown.Pattern['Time'])])
-        
-        self.__UpdatePattern()
     
     def __UpdateEditor(self, Pattern):
         # Update Days of Week
@@ -552,6 +433,130 @@ class AutoScheduleController:
     
     def __SystemInactivityHandler(self):
         self.GUIHost.ActCtl.StartShutdownConfirmation(click=True)
+        
+    ## Public Methods ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
+    def SaveSchedule(self):
+        # only need to save the preset names, presets are stored presistently on camera
+        if File.Exists(self.__scheduleFilePath):
+            # file exists -> read file to object, modify object, save object to file
+            #### read file to object
+            scheduleFile = File(self.__scheduleFilePath, 'rt')
+            scheduleString = scheduleFile.read()
+            scheduleObj = json.loads(scheduleString)
+            scheduleFile.close()
+            
+            #### modify object
+            scheduleObj['auto_start']['enabled'] = int(self.AutoStart)
+            scheduleObj['auto_start']['pattern'] = self.__pattern_start.Pattern
+            scheduleObj['auto_start']['mode'] = self.__pattern_start.Activity
+            scheduleObj['auto_shutdown']['enabled'] = int(self.AutoShutdown)
+            scheduleObj['auto_shutdown']['pattern'] = self.__pattern_shutdown.Pattern
+            
+            #### save object to file
+            scheduleFile = File(self.__scheduleFilePath, 'wt')
+            scheduleFile.write(json.dumps(scheduleObj))
+            scheduleFile.close()
+            
+        else:
+            # file does not exist -> create object, save object to file
+            #### create object
+            scheduleObj = \
+                {
+                    'auto_start': 
+                        {
+                            'enabled': 0,
+                            'pattern': {},
+                            'mode': ''
+                        },
+                    'auto_shutdown':
+                        {
+                            'enabled': 0,
+                            'pattern': {}
+                        }
+                }
+            scheduleObj['auto_start']['enabled'] = int(self.AutoStart)
+            scheduleObj['auto_start']['pattern'] = self.__pattern_start.Pattern
+            scheduleObj['auto_start']['mode'] = self.__pattern_start.Activity
+            scheduleObj['auto_shutdown']['enabled'] = int(self.AutoShutdown)
+            scheduleObj['auto_shutdown']['pattern'] = self.__pattern_shutdown.Pattern
+            
+            #### save object to file
+            scheduleFile = File(self.__scheduleFilePath, 'xt')
+            scheduleFile.write(json.dumps(scheduleObj))
+            scheduleFile.close()
+            
+        if bool(scheduleObj['auto_start']['enabled']):
+            self.__AutoStartClock.Enable()
+        else:
+            self.__AutoStartClock.Disable()
+            
+        self.__AutoStartClock.SetDays(scheduleObj['auto_start']['pattern']['Days'])
+        self.__AutoStartClock.SetTimes([self.__ClockTime(scheduleObj['auto_start']['pattern']['Time'])])
+        
+        if bool(scheduleObj['auto_shutdown']['enabled']):
+            self.__AutoShutdownClock.Enable()
+        else:
+            self.__AutoShutdownClock.Disable()
+            
+        self.__AutoShutdownClock.SetDays(scheduleObj['auto_shutdown']['pattern']['Days'])
+        self.__AutoShutdownClock.SetTimes([self.__ClockTime(scheduleObj['auto_shutdown']['pattern']['Time'])])
+        
+        # Propogate schedule to other UIHosts
+        for TP in self.GUIHost.TPs:
+            if TP is not self.UIHost:
+                TP.SchedCtl.LoadSchedule()
+    
+    def LoadSchedule(self):
+        # only need to load the preset names, presets are stored presistently on camera
+        if File.Exists(self.__scheduleFilePath):
+            #### read file to object
+            scheduleFile = File(self.__scheduleFilePath, 'rt')
+            scheduleString = scheduleFile.read()
+            scheduleObj = json.loads(scheduleString)
+            # Log('JSON Obj: {}'.format(scheduleObj))
+            scheduleFile.close()
+            
+            #### iterate over objects and load presets
+            self.AutoStart = bool(scheduleObj['auto_start']['enabled'])
+            self.__pattern_start.Pattern = scheduleObj['auto_start']['pattern']
+            self.__pattern_start.Activity = scheduleObj['auto_start']['mode']
+            self.AutoShutdown =  bool(scheduleObj['auto_shutdown']['enabled'])
+            self.__pattern_shutdown.Pattern = scheduleObj['auto_shutdown']['pattern']
+
+        else:
+            Log('No presets file exists')
+            
+            # load defaults
+            self.AutoStart = False
+            self.__pattern_start.Pattern = self.__default_pattern
+            self.__pattern_start.Activity = 'share'
+            self.AutoShutdown =  False
+            self.__pattern_shutdown.Pattern = self.__default_pattern
+            
+        if self.AutoStart:
+            self.__toggle_start.SetState(1)
+            self.__AutoStartClock.Enable()
+        else:
+            self.__toggle_start.SetState(0)
+            self.__AutoStartClock.Disable()
+            
+        if self.AutoShutdown:
+            self.__toggle_shutdown.SetState(1)
+            self.__AutoShutdownClock.Enable()
+        else:
+            self.__toggle_shutdown.SetState(0)
+            self.__AutoShutdownClock.Disable()
+        
+        self.__activity_start.SetCurrent(self.UIHost.Btns['Schedule-Start-Act-{}'.format(self.__pattern_start.Activity)])
+        
+        self.__AutoStartClock.SetDays(self.__pattern_start.Pattern['Days'])
+        self.__AutoStartClock.SetTimes([self.__ClockTime(self.__pattern_start.Pattern['Time'])])
+            
+        self.__AutoShutdownClock.SetDays(self.__pattern_shutdown.Pattern['Days'])
+        self.__AutoShutdownClock.SetTimes([self.__ClockTime(self.__pattern_shutdown.Pattern['Time'])])
+        
+        self.__UpdatePattern()
 
 ## End Class Definitions -------------------------------------------------------
 ##

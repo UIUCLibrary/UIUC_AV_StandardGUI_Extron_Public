@@ -137,7 +137,6 @@ class SystemHardwareController_TestClass(unittest.TestCase):
         self.TestUIController = self.TestGUIController.TP_Main
         return super().setUp()
     
-    # TODO: test creating system hardware devices
     def test_SystemHardwareController_Init(self):
         self.HardwareDict = \
             {
@@ -573,8 +572,8 @@ class SystemPollingController_TestClass(unittest.TestCase):
                     self.TestPollController.SetPollingMode(con)
     
     def test_SystemPollingController_AddPolling(self):
-        importlib.reload(settings)
-        self.TestGUIController.Initialize()
+        # importlib.reload(settings)
+        # self.TestGUIController.Initialize()
         TestHardware = self.TestGUIController.Hardware['MON001']
         contextList = \
             [
@@ -607,8 +606,8 @@ class SystemPollingController_TestClass(unittest.TestCase):
         
     
     def test_SystemPollingController_RemovePolling(self):
-        importlib.reload(settings)
-        self.TestGUIController.Initialize()
+        # importlib.reload(settings)
+        # self.TestGUIController.Initialize()
         TestHardware = self.TestGUIController.Hardware['MON001']
         self.TestPollController.Polling = []
         self.TestPollController.AddPolling(TestHardware.interface,
@@ -624,8 +623,8 @@ class SystemPollingController_TestClass(unittest.TestCase):
         self.assertEqual(len(self.TestPollController.Polling), 0)
     
     def test_SystemPollingController_UpdatePolling(self):
-        importlib.reload(settings)
-        self.TestGUIController.Initialize()
+        # importlib.reload(settings)
+        # self.TestGUIController.Initialize()
         TestHardware = self.TestGUIController.Hardware['MON001']
         self.TestPollController.Polling = []
         self.TestPollController.AddPolling(TestHardware.interface,

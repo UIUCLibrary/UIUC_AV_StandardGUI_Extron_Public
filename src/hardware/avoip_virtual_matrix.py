@@ -227,9 +227,9 @@ class DeviceClass:
         self.__ConnectHelper()
     
     def SetStandby(self, value, qualifier):
-        if value == True or value == 1 or value == 'on':
+        if value in [True, 1, 'on', 'On', 'ON', 'Standby']:
             cmdVal = 'on'
-        elif value == False or value == 0 or value == 'off':
+        elif value in [False, 0, 'off', 'Off', 'OFF', 'Unstandby']:
             cmdVal = 'off'
         
         if qualifier is not None and 'Input' in qualifier:
@@ -242,15 +242,26 @@ class DeviceClass:
         self.__ConnectHelper()
     
     def SetVideoMute(self, value, qualifier):
-        Output = self.VirtualOutputDevices[qualifier['Output']]
-        if value == 'Video':
-            Output.interface.Set('LiveLocal', self.__Mute_Local_Playlist)
-        elif value == 'Video & Sync':
-            Output.interface.Set('LiveLocal', self.__Mute_Local_Playlist)
-            Output.interface.Set('HDMIOutput', 'off')
-        elif value == 'Off':
-            Output.interface.Set('LiveLocal', 'live')
-            Output.interface.Set('HDMIOutput', 'on')
+        if qualifier is not None and 'Output' in qualifier:
+            Output = self.VirtualOutputDevices[qualifier['Output']]
+            if value == 'Video':
+                Output.interface.Set('LiveLocal', self.__Mute_Local_Playlist)
+            elif value == 'Video & Sync':
+                Output.interface.Set('LiveLocal', self.__Mute_Local_Playlist)
+                Output.interface.Set('HDMIOutput', 'off')
+            elif value == 'Off':
+                Output.interface.Set('LiveLocal', 'live')
+                Output.interface.Set('HDMIOutput', 'on')
+        else:
+            for Output in self.VirtualOutputDevices.values():
+                if value == 'Video':
+                    Output.interface.Set('LiveLocal', self.__Mute_Local_Playlist)
+                elif value == 'Video & Sync':
+                    Output.interface.Set('LiveLocal', self.__Mute_Local_Playlist)
+                    Output.interface.Set('HDMIOutput', 'off')
+                elif value == 'Off':
+                    Output.interface.Set('LiveLocal', 'live')
+                    Output.interface.Set('HDMIOutput', 'on')
             
         self.Update('VideoMute')
         self.__ConnectHelper()
@@ -262,11 +273,11 @@ class DeviceClass:
             SyncMuteStatus = OutputHw.interface.ReadStatus('HDMIOutput')
             
             if VideoMuteStatus != 'live' and not SyncMuteStatus: # Video&Sync
-                self.WriteStatus('VideoMute', 'Video & Sync', {'Output', OutputHw.MatrixOutput})
+                self.WriteStatus('VideoMute', 'Video & Sync', {'Output': OutputHw.MatrixOutput})
             elif VideoMuteStatus != 'live' and SyncMuteStatus: # Video
-                self.WriteStatus('VideoMute', 'Video', {'Output', OutputHw.MatrixOutput})
+                self.WriteStatus('VideoMute', 'Video', {'Output': OutputHw.MatrixOutput})
             elif VideoMuteStatus == 'live' and SyncMuteStatus: # Off
-                self.WriteStatus('VideoMute', 'Off', {'Output', OutputHw.MatrixOutput})
+                self.WriteStatus('VideoMute', 'Off', {'Output': OutputHw.MatrixOutput})
         self.__ConnectHelper()
     
     def FeedbackOutputTieStatusHandler(self, command, value, qualifier, hardware=None):

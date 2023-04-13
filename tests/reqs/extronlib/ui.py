@@ -1,11 +1,25 @@
 import extronlib.device
 from typing import Dict, Tuple, List, Union
+import os
+import json
 
 ## CLASS DEFINITIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 class Button:
     _ada_blinkRates = ['Slow', 'Medium', 'Fast']
-    _dummy_ID = 42000
+    _controls_obj = None
+    
+    @classmethod
+    def __loadControlsObj(cls):
+        if os.path.exists('./tests/reqs/emFS/SFTP/user/controls.json'): # jsonPath is valid, so load jsonObj from path
+            jsonFile = open('./tests/reqs/emFS/SFTP/user/controls.json')
+            jsonStr = jsonFile.read()
+            jsonFile.close()
+            jsonObj = json.loads(jsonStr)
+            cls._controls_obj = jsonObj
+        else:
+            raise FileNotFoundError('Controls JSON File Not Found')
+        
     def __init__(self,
                  Host: Union[extronlib.device.UIDevice,
                              extronlib.device.eBUSDevice,
@@ -34,18 +48,22 @@ class Button:
         # Repeated
         # Tapped
         
+        if self._controls_obj is None:
+            Button.__loadControlsObj() # load controls data into dummy case
+        
         self.BlinkState = 'Not blinking'
         self.Enabled = True
         self.Host = Host
-        if type(ID) == type(1):
+        
+        if type(ID) is int:
             self.ID = ID
-            self.Name = 'Dummy Name'
-        elif type(ID) == type(''):
-            self.ID = self._dummy_ID
-            self._dummy_ID += 1
+            self.Name = [btn['Name'] for btn in self._controls_obj['buttons'] if btn['ID'] == ID][0]
+        elif type(ID) is str:
             self.Name = ID
+            self.ID = [btn['ID'] for btn in self._controls_obj['buttons'] if btn['Name'] == ID][0]
         else:
             raise ValueError("ID must be either an int ID or string Name")
+        
         self.PressedState = False
         self.State = 0
         self.Visible = True
@@ -122,7 +140,20 @@ class Knob:
         self.ID = ID
     
 class Label:
-    _dummy_ID = 43000
+    
+    _controls_obj = None
+    
+    @classmethod
+    def __loadControlsObj(cls):
+        if os.path.exists('./tests/reqs/emFS/SFTP/user/controls.json'): # jsonPath is valid, so load jsonObj from path
+            jsonFile = open('./tests/reqs/emFS/SFTP/user/controls.json')
+            jsonStr = jsonFile.read()
+            jsonFile.close()
+            jsonObj = json.loads(jsonStr)
+            cls._controls_obj = jsonObj
+        else:
+            raise FileNotFoundError('Controls JSON File Not Found')
+        
     def __init__(self,
                  Host: Union[extronlib.device.UIDevice,
                              extronlib.device.eBUSDevice,
@@ -135,17 +166,18 @@ class Label:
             UIHost (extronlib.device) – Device object hosting this UIObject\n
             ID (int, string) – ID or Name of the UIObject
         """
+        if self._controls_obj is None:
+            Label.__loadControlsObj() # load controls data into dummy case
         
-        self.Host = Host
-        if type(ID) == type(1):
+        if type(ID) is int:
             self.ID = ID
-            self.Name = 'Dummy Name'
-        elif type(ID) == type(''):
-            self.ID = self._dummy_ID
-            self._dummy_ID += 1
+            self.Name = [lbl['Name'] for lbl in self._controls_obj['labels'] if lbl['ID'] == ID][0]
+        elif type(ID) is str:
             self.Name = ID
+            self.ID = [lbl['ID'] for lbl in self._controls_obj['labels'] if lbl['Name'] == ID][0]
         else:
             raise ValueError("ID must be either an int ID or string Name")
+        
         self.Visible = True
         self._text = "Dummy Label Text"
             
@@ -158,7 +190,20 @@ class Label:
         self.Visible = visible
     
 class Level:
-    _dummy_ID = 44000
+    
+    _controls_obj = None
+    
+    @classmethod
+    def __loadControlsObj(cls):
+        if os.path.exists('./tests/reqs/emFS/SFTP/user/controls.json'): # jsonPath is valid, so load jsonObj from path
+            jsonFile = open('./tests/reqs/emFS/SFTP/user/controls.json')
+            jsonStr = jsonFile.read()
+            jsonFile.close()
+            jsonObj = json.loads(jsonStr)
+            cls._controls_obj = jsonObj
+        else:
+            raise FileNotFoundError('Controls JSON File Not Found')
+        
     def __init__(self,
                  UIHost: Union[extronlib.device.UIDevice,
                              extronlib.device.eBUSDevice,
@@ -171,16 +216,21 @@ class Level:
             UIHost (extronlib.device) – Device object hosting this UIObject\n
             ID (int, string) – ID or Name of the UIObject
         """
+        
+        if self._controls_obj is None:
+            Level.__loadControlsObj() # load controls data into dummy case
+        
         self.Host = UIHost
-        if type(ID) == type(1):
+        
+        if type(ID) is int:
             self.ID = ID
-            self.Name = 'Dummy Name'
-        elif type(ID) == type(''):
-            self.ID = self._dummy_ID
-            self._dummy_ID += 1
+            self.Name = [lvl['Name'] for lvl in self._controls_obj['levels'] if lvl['ID'] == ID][0]
+        elif type(ID) is str:
             self.Name = ID
+            self.ID = [lvl['ID'] for lvl in self._controls_obj['levels'] if lvl['Name'] == ID][0]
         else:
             raise ValueError("ID must be either an int ID or string Name")
+        
         self.Level = 0
         self.Max = 100
         self.Min = 0
@@ -233,7 +283,20 @@ class Level:
         self.Visible = visible
     
 class Slider:
-    _dummy_ID = 45000
+    
+    _controls_obj = None
+    
+    @classmethod
+    def __loadControlsObj(cls):
+        if os.path.exists('./tests/reqs/emFS/SFTP/user/controls.json'): # jsonPath is valid, so load jsonObj from path
+            jsonFile = open('./tests/reqs/emFS/SFTP/user/controls.json')
+            jsonStr = jsonFile.read()
+            jsonFile.close()
+            jsonObj = json.loads(jsonStr)
+            cls._controls_obj = jsonObj
+        else:
+            raise FileNotFoundError('Controls JSON File Not Found')
+        
     def __init__(self, 
                  UIHost: Union[extronlib.device.UIDevice,
                              extronlib.device.eBUSDevice,
@@ -254,15 +317,19 @@ class Slider:
         self.Enabled = True
         self.Fill = 0
         self.Host = UIHost
-        if type(ID) == type(1):
+        
+        if self._controls_obj is None:
+            Slider.__loadControlsObj() # load controls data into dummy case
+        
+        if type(ID) is int:
             self.ID = ID
-            self.Name = 'Dummy Name'
-        elif type(ID) == type(''):
-            self.ID = self._dummy_ID
-            self._dummy_ID += 1
+            self.Name = [sld['Name'] for sld in self._controls_obj['sliders'] if sld['ID'] == ID][0]
+        elif type(ID) is str:
             self.Name = ID
+            self.ID = [sld['ID'] for sld in self._controls_obj['sliders'] if sld['Name'] == ID][0]
         else:
             raise ValueError("ID must be either an int ID or string Name")
+        
         self.Max = 100
         self.Min = 0
         self.Step = 1

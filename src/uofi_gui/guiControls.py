@@ -81,7 +81,7 @@ class GUIController:
         self.PrimarySwitcherId = Settings.primarySwitcher
         self.PrimaryDSPId = Settings.primaryDSP
         
-        # TODO: Other settings go here
+        # Additional settings go here
 
         ## Processor Definition ------------------------------------------------
         if type(CtlProcs) is str:
@@ -155,28 +155,64 @@ class GUIController:
         for tp in self.TPs:
             tp.HdrCtl.ConfigSystemOn()
             tp.CamCtl.SelectDefaultCamera()
+            
+        if self.Hardware[self.PrimarySwitcherId].Manufacturer == 'AMX' and self.Hardware[self.PrimarySwitcherId].Model in ['N2300 Virtual Matrix']:
+            # Take SVSI ENC endpoints out of standby mode
+            self.Hardware[self.PrimarySwitcherId].interface.Set('Standby', 'Off', None)
+            # Unmute SVSI DEC endpoints
+            self.Hardware[self.PrimarySwitcherId].interface.Set('VideoMute', 'Off', None)
+                
+        # power on displays
+        for dest in self.Destinations:
+            try:
+                self.TP_Main.DispCtl.SetDisplayPower(dest['Id'], 'On')
+            except LookupError:
+                # display does not have hardware to power on or off
+                pass
 
     def StartupSyncedActions(self, count: int) -> None:
         pass
 
     def SwitchActions(self) -> None:
+        # set display sources
+        for dest in self.Destinations:
+            try:
+                self.TP_Main.DispCtl.SetDisplaySource(dest['Id'])
+            except LookupError:
+                # display does not have hardware to power on or off
+                pass
+            
         for tp in self.TPs:
             tp.SrcCtl.ShowSelectedSource()
-            # tp.SrcCtl.UpdateSourceMenu()
 
     def SwitchSyncedActions(self, count: int) -> None:
         pass
 
     def ShutdownActions(self) -> None:
         self.PollCtl.SetPollingMode('inactive')
+        
+        if self.Hardware[self.PrimarySwitcherId].Manufacturer == 'AMX' and self.Hardware[self.PrimarySwitcherId].Model in ['N2300 Virtual Matrix']:
+            # Put SVSI ENC endpoints in to standby mode
+            self.Hardware[self.PrimarySwitcherId].interface.Set('Standby', 'On', None)
+            # Ensure SVSI DEC endpoints are muted
+            self.Hardware[self.PrimarySwitcherId].interface.Set('VideoMute', 'Video & Sync', None)
+                
+        # power off displays
+        for destId in self.Destinations.keys():
+            try:
+                self.TP_Main.DispCtl.SetDisplayPower(destId, 'Off')
+            except LookupError:
+                # display does not have hardware to power on or off
+                pass
+        
         self.SrcCtl.MatrixSwitch(0, 'All', 'untie')
         self.TP_Main.AudioCtl.AudioShutdown()
         for tp in self.TPs:
             tp.HdrCtl.ConfigSystemOff()
         
-        # for id, hw in self.Hardware:
-        #     if id.startswith('WPD'):
-        #         hw.interface.Set('BootUsers', value=None, qualifier=None)
+        for id, hw in self.Hardware:
+            if id.startswith('WPD'):
+                hw.interface.Set('BootUsers', value=None, qualifier=None)
 
     def ShutdownSyncedActions(self, count: int) -> None:
         pass
