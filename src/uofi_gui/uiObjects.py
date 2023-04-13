@@ -28,8 +28,6 @@ from extronlib.system import Wait
 ##
 ## Begin Python Imports --------------------------------------------------------
 import json
-import sys
-TESTING = ('unittest' in sys.modules.keys())
 
 ## End Python Imports ----------------------------------------------------------
 ##
@@ -207,10 +205,7 @@ class ExUIDevice(UIDevice):
             self.Btns[btnName] = Button(self, **button)
             self.Btns[btnName].holdTime = button['holdTime']
             self.Btns[btnName].repeatTime = button['repeatTime']
-                
-            if TESTING is True: # TODO: figure out how to make this work in the button class
-                self.Btns[btnName].Name = btnName
-                
+            
             self.Btns[btnName].SetState(0)
             
             @event(self.Btns[btnName], 'Pressed')
@@ -324,9 +319,6 @@ class ExUIDevice(UIDevice):
         ## format level info into self.Lvls
         for lvl in jsonObj['levels']:
             self.Lvls[lvl['Name']] = Level(self, lvl['ID'])
-            
-            if TESTING is True:
-                self.Lvls[lvl['Name']].Name = lvl['Name']
 
     def BuildSliders(self,
                     jsonObj: Dict = {},
@@ -360,9 +352,6 @@ class ExUIDevice(UIDevice):
         ## format slider info into self.Slds
         for slider in jsonObj['sliders']:
             self.Slds[slider['Name']] = Slider(self, slider['ID'])
-            
-            if TESTING is True:
-                self.Slds[slider['Name']].Name = slider['Name']
 
     def BuildLabels(self,
                     jsonObj: Dict = {},
@@ -396,8 +385,5 @@ class ExUIDevice(UIDevice):
         ## format label info into self.Lbls
         for lbl in jsonObj['labels']:
             self.Lbls[lbl['Name']] = Label(self, lbl['ID'])
-            
-            if TESTING is True:
-                self.Lbls[lbl['Name']].Name = lbl['Name']
 
 ## End Function Definitions ----------------------------------------------------

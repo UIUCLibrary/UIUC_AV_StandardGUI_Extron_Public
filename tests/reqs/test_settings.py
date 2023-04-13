@@ -645,7 +645,7 @@ hardware = [
                'pollFrequency': 60
             },
             'interface_configuration': {
-               'Hostname': 'libavstest08.library.illinois.edu',
+               'Hostname': 'dec002',
                'IPPort': 50002,
                'Model': 'NMX-DEC-N2322'
             }
@@ -753,7 +753,7 @@ hardware = [
                'pollFrequency': 60
             },
             'interface_configuration': {
-               'Hostname': 'libavstest07.library.illinois.edu',
+               'Hostname': 'enc001',
                'IPPort': 50002,
                'Model': 'NMX-ENC-N2312'
             }
@@ -981,7 +981,7 @@ hardware = [
                'pollFrequency': 60
             },
             'interface_configuration': {
-               'Hostname': 'libavstest09.library.illinois.edu',
+               'Hostname': 'mon001',
                'IPPort': 7142,
                'Model': 'V625'
             }

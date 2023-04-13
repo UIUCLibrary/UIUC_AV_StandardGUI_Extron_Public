@@ -306,33 +306,33 @@ class ScheduleController_TestClass(unittest.TestCase): # rename for module to be
                 self.assertIsNotNone(rtnVal)
                 self.assertEqual(rtnVal, expectedValList[i])
     
-    def test_ScheduleController_PRIV_SaveSchedule(self):
+    def test_ScheduleController_SaveSchedule(self):
         import shutil
         
         with self.subTest(con='Save - No Existing Schedule'):
             if File.Exists(self.TestScheduleController._AutoScheduleController__scheduleFilePath):
                 File.DeleteFile(self.TestScheduleController._AutoScheduleController__scheduleFilePath)
             try:
-                self.TestScheduleController._AutoScheduleController__SaveSchedule()
+                self.TestScheduleController.SaveSchedule()
             except Exception as inst:
-                self.fail("__SaveSchedule() raised {} unexpectedly!".format(type(inst)))
+                self.fail("SaveSchedule() raised {} unexpectedly!".format(type(inst)))
                 
         with self.subTest(con='Save - Existing Schedule'):
             shutil.copyfile('./tests/reqs/emFS/SFTP/user/states/test_states/test_room_schedule.json', './tests/reqs/emFS/SFTP/user/states/test_room_schedule_write.json')
             self.TestScheduleController._AutoScheduleController__scheduleFilePath = '/user/states/test_room_schedule_write.json'
             try:
-                self.TestScheduleController._AutoScheduleController__SaveSchedule()
+                self.TestScheduleController.SaveSchedule()
             except Exception as inst:
                 self.fail("__SaveSchedule() raised {} unexpectedly!".format(type(inst)))
             os.remove('./tests/reqs/emFS/SFTP/user/states/test_room_schedule_write.json')
     
-    def test_ScheduleController_PRIV_LoadSchedule_NoFile(self):
+    def test_ScheduleController_LoadSchedule_NoFile(self):
         try:
-            self.TestScheduleController._AutoScheduleController__LoadSchedule()
+            self.TestScheduleController.LoadSchedule()
         except Exception as inst:
-            self.fail("__LoadSchedule() raised {} unexpectedly!".format(type(inst)))
+            self.fail("LoadSchedule() raised {} unexpectedly!".format(type(inst)))
     
-    def test_ScheduleController_PRIV_LoadSchedule_TestFile(self):
+    def test_ScheduleController_LoadSchedule_TestFile(self):
         context = \
             [
                 {
@@ -359,7 +359,7 @@ class ScheduleController_TestClass(unittest.TestCase): # rename for module to be
             with self.subTest(i=con):
                 self.TestScheduleController.AutoStart = con['AutoStart']
                 self.TestScheduleController.AutoShutdown = con['AutoShutdown']
-                self.TestScheduleController._AutoScheduleController__LoadSchedule()
+                self.TestScheduleController.LoadSchedule()
         
      
     def test_ScheduleController_PRIV_UpdateEditor(self):
@@ -487,13 +487,6 @@ class ScheduleController_TestClass(unittest.TestCase): # rename for module to be
                     self.TestScheduleController._AutoScheduleController__TechPageInactivityHandler()
                 except Exception as inst:
                     self.fail("__TechPageInactivityHandler raised {} unexpectedly!".format(type(inst)))
-    
-    # def test_ScheduleController_PRIV_SplashPageInactivityHandler(self):
-    #     # exec method
-    #     try:
-    #         self.TestScheduleController._AutoScheduleController__SplashPageInactivityHandler()
-    #     except Exception as inst:
-    #         self.fail("__SplashPageInactivityHandler raised {} unexpectedly!".format(type(inst)))
     
     def test_ScheduleController_PRIV_SystemInactivityHandler(self):
         # exec method

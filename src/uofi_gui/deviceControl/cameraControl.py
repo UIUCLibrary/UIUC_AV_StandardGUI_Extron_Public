@@ -145,7 +145,7 @@ class CameraController:
         elif action == 'Released':
             qual = self.__Switcher.SwitchCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(self.__Switcher.SwitchCommand['command'], str(button.camera['Input']), qual))
-            #self.__switcher.interface.Set(self.__switcher.SwitchCommand['command'], str(button.camera['Input']), qual)
+            self.__switcher.interface.Set(self.__switcher.SwitchCommand['command'], str(button.camera['Input']), qual)
             
             self.UpdatePresetButtons()
     
@@ -157,7 +157,7 @@ class CameraController:
             camHW = self.__SelectBtns.GetCurrent().camera['Hw']
             qual = camHW.PresetRecallCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual))
-            #camHW.interface.Set(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual)
+            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual)
         elif action == 'Held':
             button.SetState(0)
             camHW = self.__SelectBtns.GetCurrent().camera['Hw']
@@ -178,13 +178,13 @@ class CameraController:
             camHW = self.__SelectBtns.GetCurrent().camera['Hw']
             qual = camHW.PresetRecallCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual))
-            #camHW.interface.Set(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual)
+            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual)
         elif action == 'Held':
             button.SetState(0)
             camHW = self.__SelectBtns.GetCurrent().camera['Hw']
             qual = camHW.PresetSaveCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual))
-            #camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual)
+            camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual)
             self.UIHost.Click(3, 0.25)
     
     def __CamCtlHandler(self, button: 'Button', action: str):
@@ -195,34 +195,34 @@ class CameraController:
                 qual = camHW.PTCommand.get('qualifier', None)
                 if button.moveDir == 'L': # Pan Left
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Left', qual))
-                    #camHW.interface.Set(camHW.PTCommand['command'], 'Left', qual)
+                    camHW.interface.Set(camHW.PTCommand['command'], 'Left', qual)
                 elif button.moveDir == 'R': # Pan Right
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Right', qual))
-                    #camHW.interface.Set(camHW.PTCommand['command'], 'Right', qual)
+                    camHW.interface.Set(camHW.PTCommand['command'], 'Right', qual)
                 elif button.moveDir == 'Up': # Tilt Up
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Up', qual))
-                    #camHW.interface.Set(camHW.PTCommand['command'], 'Up', qual)
+                    camHW.interface.Set(camHW.PTCommand['command'], 'Up', qual)
                 elif button.moveDir == 'Dn': # Tilt Down
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Down', qual))
-                    #camHW.interface.Set(camHW.PTCommand['command'], 'Down', qual)
+                    camHW.interface.Set(camHW.PTCommand['command'], 'Down', qual)
             elif button.moveMode == 'Z': # Zoom
                 qual = camHW.ZCommand.get('qualifier', None)
                 if button.moveDir == 'In': # Zoom In
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.ZCommand['command'], 'Tele', qual))
-                    #camHW.interface.Set(camHW.ZCommand['command'], 'Tele', qual)
+                    camHW.interface.Set(camHW.ZCommand['command'], 'Tele', qual)
                 elif button.moveDir == 'Out': # Zoom Out
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.ZCommand['command'], 'Wide', qual))
-                    #camHW.interface.Set(camHW.ZCommand['command'], 'Wide', qual)
+                    camHW.interface.Set(camHW.ZCommand['command'], 'Wide', qual)
         elif action == 'Released':
             button.SetState(0)
             if button.moveMode == 'P' or button.moveMode == 'T': # Pan & Tilt
                 qual = camHW.PTCommand.get('qualifier', None)
                 Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Stop', qual))
-                #camHW.interface.Set(camHW.PTCommand['command'], 'Stop', qual)
+                camHW.interface.Set(camHW.PTCommand['command'], 'Stop', qual)
             elif button.moveMode == 'Z': # Zoom
                 qual = camHW.ZCommand.get('qualifier', None)
                 Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.ZCommand['command'], 'Stop', qual))
-                #camHW.interface.Set(camHW.ZCommand['command'], 'Stop', qual)
+                camHW.interface.Set(camHW.ZCommand['command'], 'Stop', qual)
     
     def __EditorNameHandler(self, button: 'Button', action: str):
         if action == 'Pressed':
@@ -242,7 +242,7 @@ class CameraController:
             camHW = self.__SelectBtns.GetCurrent().camera['Hw']
             qual = camHW.PresetRecallCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
-            #camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
+            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
             button.SetState(0)
     
     def __EditorSaveHandler(self, button: 'Button', action: str):
@@ -253,7 +253,7 @@ class CameraController:
             qual = camHW.PresetSaveCommand.get('qualifier', None)
             camHW.Presets[self.__EditorName.PresetValue] = self.__EditorName.PresetText
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual))
-            #camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__editor_Name.PresetValue), qual)
+            camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__editor_Name.PresetValue), qual)
             button.SetState(0)
             self.UpdatePresetButtons()
             self.UIHost.HidePopup('CameraPresetEditor')
@@ -353,7 +353,7 @@ class CameraController:
         input = self.__DefaultCamera.camera['Input']
         qual = self.__Switcher.SwitchCommand.get('qualifier', None)
         Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(self.__Switcher.SwitchCommand['command'], str(input), qual))
-        #self.__switcher.interface.Set(self.__switcher.SwitchCommand['command'], str(input), qual)
+        self.__switcher.interface.Set(self.__switcher.SwitchCommand['command'], str(input), qual)
         self.UpdatePresetButtons()
         
     def SendCameraHome(self, camera: Union['SystemHardwareController', str]=None): 
@@ -363,7 +363,7 @@ class CameraController:
                     camHW = self.GUIHost.Hardware[cam['Id']]
                     qual = camHW.PresetRecallCommand.get('qualifier', None)
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
-                    #camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
+                    camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
         else:
             if type(camera) is SystemHardwareController:
                 camHW = camera
@@ -377,7 +377,7 @@ class CameraController:
             
             qual = camHW.PresetRecallCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
-            #camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
+            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
 
 
 ## End Class Definitions -------------------------------------------------------

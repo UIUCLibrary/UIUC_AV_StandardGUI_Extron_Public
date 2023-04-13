@@ -84,6 +84,8 @@ class DisplayController:
         for dest in self.GUIHost.Destinations:
             self.Destinations[dest['id']] = dest
             self.Destinations[dest['id']]['hw'] = self.GUIHost.Hardware.get(dest['id'], None)
+            self.Destinations[dest['id']]['mute'] = False
+            self.Destinations[dest['id']]['volume'] = 0.0
             
             if dest['type'] == 'conf' or dest['type'] == 'c-conf':
                 self.Destinations[dest['id']]['hw_type'] = 'conf'
@@ -168,12 +170,7 @@ class DisplayController:
     def DisplayMute(self) -> Dict[str, bool]:
         rtnDict = {}
         for key, dest in self.Destinations.items():
-            Hw = dest['hw']
-            
-            if dest['type'] == 'mon' and Hw is not None:
-                qual = Hw.MuteCommand.get('qualifier', None)
-                    
-                rtnDict[key] = (Hw.interface.ReadStatus(Hw.MuteCommand['command'], qual) in ['on', 'On', 'ON', 1, True, 'Mute', 'mute', 'MUTE'])
+            rtnDict[key] = dest['mute']
                 
         return rtnDict
     
@@ -188,6 +185,7 @@ class DisplayController:
         State = Value[1]
         
         setState = (State in ['on', 'On', 'ON', 1, True, 'Mute', 'mute', 'MUTE'])
+        self.Destinations[dest]['mute'] = setState
         
         if type(dest) is str:
             Hw = self.Destinations[dest]['hw']
@@ -205,12 +203,7 @@ class DisplayController:
     def DisplayVolume(self):
         rtnDict = {}
         for key, dest in self.Destinations.items():
-            Hw = dest['hw']
-            
-            if dest['type'] == 'mon' and Hw is not None:
-                qual = Hw.VolumeCommand.get('qualifier', None)
-                    
-                rtnDict[key] = Hw.interface.ReadStatus(Hw.VolumeCommand['command'], qual)
+            rtnDict[key] = dest['volume']
 
         return rtnDict
     
@@ -223,7 +216,7 @@ class DisplayController:
         
         dest = Value[0]
         value = int(Value[1])
-        
+        self.Destinations[dest]['volume'] = value
         if type(dest) is str:
             Hw = self.Destinations[dest]['hw']
         elif type(dest) is Destination:
@@ -259,8 +252,8 @@ class DisplayController:
             if control.CtlType == 'On':
                 # set display on, clear off button state
                 if control.HwType == 'conf' and control.ConfControlType == 'switcher':
-                    # TODO: do on/off with switcher output
-                    pass
+                    output = self.Destinations[control.DestID]['output']
+                    self.GUIHost.Hardware[self.GUIHost.PrimarySwitcherId].interface.Set('VideoMute', 'Off', {'Output': output}) # sets video mute off, which turns on the display
                 else:
                     self.SetDisplayPower(control.DestID, 'On')
                 self.__Controls[control.HwType][control.CtlGroup]['Off'].SetState(0)
@@ -268,8 +261,8 @@ class DisplayController:
             elif control.CtlType == 'Off':
                 # set display off, clear on button state
                 if control.HwType == 'conf' and control.ConfControlType == 'switcher':
-                    # TODO: do on/off with switcher output
-                    pass
+                    output = self.Destinations[control.DestID]['output']
+                    self.GUIHost.Hardware[self.GUIHost.PrimarySwitcherId].interface.Set('VideoMute', 'Video & Sync', {'Output': output}) # sets video mute on, which turns off the display
                 else:
                     self.SetDisplayPower(control.DestID, 'Off')
                 self.__Controls[control.HwType][control.CtlGroup]['On'].SetState(0)
@@ -393,12 +386,15 @@ class DisplayController:
         dest = self.Destinations[HwID]
         if state in ['on', 'On', 'ON', 1, True, 'Mute', 'mute', 'MUTE']:
             self.__Controls[dest['hw_type']][dest['ctl_group']]['Mute'].SetState(1)
+            dest['mute'] = True
         else:
             self.__Controls[dest['hw_type']][dest['ctl_group']]['Mute'].SetState(0)
+            dest['mute'] = False
             
     def DisplayVolumeFeedback(self, HwID: str, value: int):
         # Log('Feedback Display - Display Volume - Hardware: {}, Value: {}'.format(HwID, value))
         dest = self.Destinations[HwID]
+        dest['volume'] = int(value)
         self.__Controls[dest['hw_type']][dest['ctl_group']]['Vol'].SetFill(int(value))
 
 

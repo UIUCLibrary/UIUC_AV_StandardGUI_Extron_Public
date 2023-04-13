@@ -136,11 +136,7 @@ class Destination:
                 if self is self.SourceController.SystemAudioFollowDestination:
                     self.SourceController.SystemAudioFollowDestination = None
                     
-                try:
-                    muteState = self.SourceController.UIHost.DispCtl.DisplayMute[self.Id]
-                except:
-                    # TODO: handle emulated mute state in DisplayController
-                    muteState = True
+                muteState = self.SourceController.UIHost.DispCtl.DisplayMute[self.Id]
                     
                 if muteState:
                     button.SetState(3)
