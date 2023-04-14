@@ -210,7 +210,7 @@ class GUIController:
         for tp in self.TPs:
             tp.HdrCtl.ConfigSystemOff()
         
-        for id, hw in self.Hardware:
+        for id, hw in self.Hardware.items():
             if id.startswith('WPD'):
                 hw.interface.Set('BootUsers', value=None, qualifier=None)
 
