@@ -57,10 +57,16 @@ class Button:
         
         if type(ID) is int:
             self.ID = ID
-            self.Name = [btn['Name'] for btn in self._controls_obj['buttons'] if btn['ID'] == ID][0]
+            try:
+                self.Name = [btn['Name'] for btn in self._controls_obj['buttons'] if btn['ID'] == ID][0]
+            except IndexError:
+                self.Name = 'Dummy Name'
         elif type(ID) is str:
             self.Name = ID
-            self.ID = [btn['ID'] for btn in self._controls_obj['buttons'] if btn['Name'] == ID][0]
+            try:
+                self.ID = [btn['ID'] for btn in self._controls_obj['buttons'] if btn['Name'] == ID][0]
+            except IndexError:
+                self.ID = 55100
         else:
             raise ValueError("ID must be either an int ID or string Name")
         
@@ -171,10 +177,16 @@ class Label:
         
         if type(ID) is int:
             self.ID = ID
-            self.Name = [lbl['Name'] for lbl in self._controls_obj['labels'] if lbl['ID'] == ID][0]
+            try:
+                self.Name = [lbl['Name'] for lbl in self._controls_obj['labels'] if lbl['ID'] == ID][0]
+            except:
+                self.Name = 'Dummy Name'
         elif type(ID) is str:
             self.Name = ID
-            self.ID = [lbl['ID'] for lbl in self._controls_obj['labels'] if lbl['Name'] == ID][0]
+            try:
+                self.ID = [lbl['ID'] for lbl in self._controls_obj['labels'] if lbl['Name'] == ID][0]
+            except IndexError:
+                self.ID = 55200
         else:
             raise ValueError("ID must be either an int ID or string Name")
         
@@ -224,10 +236,16 @@ class Level:
         
         if type(ID) is int:
             self.ID = ID
-            self.Name = [lvl['Name'] for lvl in self._controls_obj['levels'] if lvl['ID'] == ID][0]
+            try:
+                self.Name = [lvl['Name'] for lvl in self._controls_obj['levels'] if lvl['ID'] == ID][0]
+            except IndexError:
+                self.Name = 'Dummy Name'
         elif type(ID) is str:
             self.Name = ID
-            self.ID = [lvl['ID'] for lvl in self._controls_obj['levels'] if lvl['Name'] == ID][0]
+            try:
+                self.ID = [lvl['ID'] for lvl in self._controls_obj['levels'] if lvl['Name'] == ID][0]
+            except IndexError:
+                self.ID = 55300
         else:
             raise ValueError("ID must be either an int ID or string Name")
         
@@ -323,10 +341,16 @@ class Slider:
         
         if type(ID) is int:
             self.ID = ID
-            self.Name = [sld['Name'] for sld in self._controls_obj['sliders'] if sld['ID'] == ID][0]
+            try:
+                self.Name = [sld['Name'] for sld in self._controls_obj['sliders'] if sld['ID'] == ID][0]
+            except IndexError:
+                self.Name = 'Dummy Name'
         elif type(ID) is str:
             self.Name = ID
-            self.ID = [sld['ID'] for sld in self._controls_obj['sliders'] if sld['Name'] == ID][0]
+            try:
+                self.ID = [sld['ID'] for sld in self._controls_obj['sliders'] if sld['Name'] == ID][0]
+            except IndexError:
+                self.ID = 55400
         else:
             raise ValueError("ID must be either an int ID or string Name")
         
