@@ -598,7 +598,6 @@ class SourceController:
         if len(self.__DisplaySrcList) > 5 and self.SelectedSource is not None:
             curSourceIndex = self.__DisplaySrcList.index(self.SelectedSource)
             
-            print('Current Source Index: {}'.format(curSourceIndex))
             if curSourceIndex < self.__Offset:
                 self.__Offset -= (self.__Offset - curSourceIndex)
             elif curSourceIndex >= (self.__Offset + 5):
