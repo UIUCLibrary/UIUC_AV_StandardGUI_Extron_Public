@@ -185,7 +185,6 @@ class DisplayController:
         State = Value[1]
         
         setState = (State in ['on', 'On', 'ON', 1, True, 'Mute', 'mute', 'MUTE'])
-        self.Destinations[dest]['mute'] = setState
         
         if type(dest) is str:
             Hw = self.Destinations[dest]['hw']
@@ -218,11 +217,13 @@ class DisplayController:
         
         dest = Value[0]
         value = int(Value[1])
-        self.Destinations[dest]['volume'] = value
+        
         if type(dest) is str:
             Hw = self.Destinations[dest]['hw']
+            self.Destinations[dest]['volume'] = value
         elif type(dest) is Destination:
             Hw = self.Destinations[dest.Id]['hw']
+            self.Destinations[dest.Id]['volume'] = value
             
         qual = Hw.VolumeCommand.get('qualifier', None)
             

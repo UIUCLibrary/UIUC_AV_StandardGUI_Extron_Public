@@ -253,7 +253,7 @@ class CameraController:
             qual = camHW.PresetSaveCommand.get('qualifier', None)
             camHW.Presets[self.__EditorName.PresetValue] = self.__EditorName.PresetText
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual))
-            camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__editor_Name.PresetValue), qual)
+            camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual)
             button.SetState(0)
             self.UpdatePresetButtons()
             self.UIHost.HidePopup('CameraPresetEditor')
