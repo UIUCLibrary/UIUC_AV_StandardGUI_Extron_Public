@@ -185,7 +185,6 @@ class DisplayController:
         State = Value[1]
         
         setState = (State in ['on', 'On', 'ON', 1, True, 'Mute', 'mute', 'MUTE'])
-        self.Destinations[dest]['mute'] = setState
         
         if type(dest) is str:
             Hw = self.Destinations[dest]['hw']
