@@ -14,9 +14,8 @@
 # limitations under the License.
 ################################################################################
 
-from typing import TYPE_CHECKING, Dict, Tuple, List, Union, Callable
+from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING: # pragma: no cover
-    from uofi_gui import GUIController
     from uofi_gui.uiObjects import ExUIDevice
     from extronlib.ui import Button
 
@@ -38,7 +37,7 @@ import json
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
 from uofi_gui.systemHardware import SystemHardwareController
-from utilityFunctions import DictValueSearchByKey, Log, RunAsync, debug
+from utilityFunctions import DictValueSearchByKey, Log
 
 ## End User Import -------------------------------------------------------------
 ##
@@ -62,22 +61,28 @@ class CameraController:
             else:
                 raise KeyError('No hardware item found for Camera Id ({})'.format(cam['Id']))
         
-        self.__Switcher = self.GUIHost.Hardware[self.GUIHost.CameraSwitcherId]
+        if self.GUIHost.CameraSwitcherId is not None:
+            self.__Switcher = self.GUIHost.Hardware[self.GUIHost.CameraSwitcherId]
+            
+            self.__DefaultCamera = None
+            self.__SelectBtns = self.UIHost.Btn_Grps['Camera-Select']
+            for selBtn in self.__SelectBtns.Objects:
+                re_match = re.match(r'Ctl-Camera-Select-(\d+)', selBtn.Name)
+                camNum = int(re_match.group(1))
+                cam = [cam for cam in self.Cameras.values() if camNum == cam['Number']][0]
+                # Log('Cam selection: {} ({})'.format(cam, type(cam)))
+                        
+                if cam['Id'] in self.Cameras:
+                    selBtn.camera = cam
+                    selBtn.camName = cam['Name']
+                    selBtn.SetText(cam['Name'])
+                if cam['Id'] == self.GUIHost.DefaultCameraId:
+                    self.__DefaultCamera = selBtn   
+        else:
+            self.__Switcher = None
+            self.__Camera = list(self.Cameras.values())[0]
 
-        self.__DefaultCamera = None
-        self.__SelectBtns = self.UIHost.Btn_Grps['Camera-Select']
-        for selBtn in self.__SelectBtns.Objects:
-            re_match = re.match(r'Ctl-Camera-Select-(\d+)', selBtn.Name)
-            camNum = int(re_match.group(1))
-            cam = [cam for cam in self.Cameras.values() if camNum == cam['Number']][0]
-            # Log('Cam selection: {} ({})'.format(cam, type(cam)))
-                    
-            if cam['Id'] in self.Cameras:
-                selBtn.camera = cam
-                selBtn.camName = cam['Name']
-                selBtn.SetText(cam['Name'])
-            if cam['Id'] == self.GUIHost.DefaultCameraId:
-                self.__DefaultCamera = selBtn
+        
                 
         self.__PresetBtns = DictValueSearchByKey(self.UIHost.Btns, r'Ctl-Camera-Preset-\d+', regex=True)
         for preBtn in self.__PresetBtns:
@@ -95,6 +100,10 @@ class CameraController:
             re_match = re.match(r'Ctl-Camera-([TPZ])-(Up|Dn|L|R|In|Out)', ctlBtn.Name)
             ctlBtn.moveMode = re_match.group(1)
             ctlBtn.moveDir = re_match.group(2)
+            
+        self.__ControlMirrorBtn = self.UIHost.Btns['Ctl-Camera-MirrorCtls']
+        self.__ControlMirrorBtn.SetState(1)
+        self.__ControlMirror = True
         
         self.__EditorTitle = self.UIHost.Lbls['CameraPreset-Title']
         self.__EditorName = self.UIHost.Btns['CamPreset-Name']
@@ -105,9 +114,10 @@ class CameraController:
         self.LoadPresetStates()
         self.SelectDefaultCamera()
         
-        @event(self.__SelectBtns.Objects, ['Pressed', 'Released']) # pragma: no cover
-        def camSelectBtnHandler(button: 'Button', action: str):
-            self.__CamSelectBtnHandler(button, action)
+        if self.__Switcher is not None:
+            @event(self.__SelectBtns.Objects, ['Pressed', 'Released']) # pragma: no cover
+            def camSelectBtnHandler(button: 'Button', action: str):
+                self.__CamSelectBtnHandler(button, action)
         
         @event(self.__PresetBtns, ['Pressed', 'Tapped', 'Held']) # pragma: no cover
         def presetBtnHandler(button: 'Button', action: str):
@@ -136,6 +146,10 @@ class CameraController:
         @event(self.__EditorCancel, ['Pressed', 'Released']) # pragma: no cover
         def editorCancelHandler(button: 'Button', action: str):
             self.__EditorCancelHandler(button, action)
+            
+        @event(self.__ControlMirrorBtn, ['Pressed', 'Released']) # pragma: no cover
+        def mirrorCtlHandler(button: 'Button', action: str):
+            self.__MirrorCtlHandler(button, action)
         
     # Event Handlers +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
@@ -154,13 +168,19 @@ class CameraController:
             button.SetState(1)
         elif action == 'Tapped':
             button.SetState(0)
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             qual = camHW.PresetRecallCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual))
             camHW.interface.Set(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual)
         elif action == 'Held':
             button.SetState(0)
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             PresetName = button.defaultText
             if button.PresetValue in camHW.Presets:
                 PresetName = camHW.Presets[button.PresetValue]
@@ -175,28 +195,37 @@ class CameraController:
             button.SetState(1)
         elif action == 'Tapped':
             button.SetState(0)
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             qual = camHW.PresetRecallCommand.get('qualifier', None)
-            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual))
-            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(button.PresetValue), qual)
+            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
+            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
         elif action == 'Held':
             button.SetState(0)
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             qual = camHW.PresetSaveCommand.get('qualifier', None)
-            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual))
-            camHW.interface.Set(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual)
+            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetSaveCommand['command'], str(0), qual))
+            camHW.interface.Set(camHW.PresetSaveCommand['command'], str(0), qual)
             self.UIHost.Click(3, 0.25)
     
     def __CamCtlHandler(self, button: 'Button', action: str):
-        camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+        if self.__Switcher is not None:
+            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+        else:
+            camHW = self.__Camera['Hw']
         if action == 'Pressed':
             button.SetState(1)
             if button.moveMode == 'P' or button.moveMode == 'T': # Pan & Tilt
                 qual = camHW.PTCommand.get('qualifier', None)
-                if button.moveDir == 'L': # Pan Left
+                if ((button.moveDir == 'L' and not self.__ControlMirror) or (button.moveDir == 'R' and self.__ControlMirror)): # Pan Left
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Left', qual))
                     camHW.interface.Set(camHW.PTCommand['command'], 'Left', qual)
-                elif button.moveDir == 'R': # Pan Right
+                elif ((button.moveDir == 'R' and not self.__ControlMirror) or (button.moveDir == 'L' and self.__ControlMirror)): # Pan Right
                     Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PTCommand['command'], 'Right', qual))
                     camHW.interface.Set(camHW.PTCommand['command'], 'Right', qual)
                 elif button.moveDir == 'Up': # Tilt Up
@@ -228,7 +257,10 @@ class CameraController:
         if action == 'Pressed':
             button.SetState(1)
         elif action == 'Released':
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             PresetName = ''
             if button.PresetValue in camHW.Presets:
                 PresetName = camHW.Presets[button.PresetValue]
@@ -239,7 +271,10 @@ class CameraController:
         if action == 'Pressed':
             button.SetState(1)
         elif action == 'Released':
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             qual = camHW.PresetRecallCommand.get('qualifier', None)
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
             camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
@@ -249,7 +284,10 @@ class CameraController:
         if action == 'Pressed':
             button.SetState(1)
         elif action == 'Released':
-            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            if self.__Switcher is not None:
+                camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+            else:
+                camHW = self.__Camera['Hw']
             qual = camHW.PresetSaveCommand.get('qualifier', None)
             camHW.Presets[self.__EditorName.PresetValue] = self.__EditorName.PresetText
             Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetSaveCommand['command'], str(self.__EditorName.PresetValue), qual))
@@ -265,8 +303,42 @@ class CameraController:
         elif action == 'Released':
             button.SetState(0)
             self.UIHost.HidePopup('CameraPresetEditor')
+            
+    def __MirrorCtlHandler(self, button: 'Button', action: str):
+        if action == 'Pressed':
+            button.SetState(int(not button.State))
+        elif action == 'Released':
+            self.__ControlMirror = bool(button.State)
     
     # Private Methods ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
+    def __SendCameraToPreset(self, camera: Union['SystemHardwareController', str]=None, preset: int=0):
+        if type(preset) is not int:
+            raise ValueError('Preset must be an int')
+        elif preset > 254 or preset < 0:
+            raise ValueError('Preset must be between 0 and 254')
+        
+        if camera is None:
+            for cam in self.GUIHost.Cameras:
+                if cam['Id'] in self.GUIHost.Hardware:
+                    camHW = self.GUIHost.Hardware[cam['Id']]
+                    qual = camHW.PresetRecallCommand.get('qualifier', None)
+                    Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(preset), qual))
+                    camHW.interface.Set(camHW.PresetRecallCommand['command'], str(preset), qual)
+        else:
+            if type(camera) is SystemHardwareController:
+                camHW = camera
+            elif type(camera) is str:
+                if camera in self.GUIHost.Hardware:
+                    camHW = self.GUIHost.Hardware[camera]
+                else:
+                    raise KeyError('No hardware item found for Switcher Id ({})'.format(camera))
+            else:
+                raise TypeError('Camera must be a SystemHardwareController object or string camera Id')
+            
+            qual = camHW.PresetRecallCommand.get('qualifier', None)
+            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(preset), qual))
+            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(preset), qual)
     
     # Public Methods +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -287,13 +359,13 @@ class CameraController:
                     
                 for i in range(1, 4): # Preset 0 is home, Presets 1-3 are displayed buttons
                     if i in cam['Hw'].Presets:
-                        presetObj[cam['Id']][i] = cam['Hw'].Presets[i]
+                        presetObj[cam['Id']][str(i)] = cam['Hw'].Presets[i]
                     else:
-                        presetObj[cam['Id']][i] = None
+                        presetObj[cam['Id']][str(i)] = None
             
             #### save object to file
             presetsFile = File(self.__PresetsFilePath, 'wt')
-            presetsFile.write(json.dumps(presetObj))
+            presetsFile.write(json.dumps(presetObj, indent=2, sort_keys=True))
             presetsFile.close()
         else:
             # file does not exist -> create object, save object to file
@@ -312,7 +384,7 @@ class CameraController:
             
             #### save object to file
             presetsFile = File(self.__PresetsFilePath, 'xt')
-            presetsFile.write(json.dumps(presetObj))
+            presetsFile.write(json.dumps(presetObj, indent=2, sort_keys=True))
             presetsFile.close()
     
     def LoadPresetStates(self):
@@ -341,7 +413,10 @@ class CameraController:
         NameBtn.SetText(PresetName)
     
     def UpdatePresetButtons(self):
-        camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+        if self.__Switcher is not None:
+            camHW = self.__SelectBtns.GetCurrent().camera['Hw']
+        else:
+            camHW = self.__Camera['Hw']
         for presetBtn in self.__PresetBtns:
             PresetName = presetBtn.defaultText
             if presetBtn.PresetValue in camHW.Presets:
@@ -349,6 +424,10 @@ class CameraController:
             presetBtn.SetText(PresetName)
     
     def SelectDefaultCamera(self):
+        Log('Selecting Default Camera')
+        if self.__Switcher is None:
+            self.UpdatePresetButtons()
+            return
         self.__SelectBtns.SetCurrent(self.__DefaultCamera)
         input = self.__DefaultCamera.camera['Input']
         qual = self.__Switcher.SwitchCommand.get('qualifier', None)
@@ -357,28 +436,10 @@ class CameraController:
         self.UpdatePresetButtons()
         
     def SendCameraHome(self, camera: Union['SystemHardwareController', str]=None): 
-        if camera is None:
-            for cam in self.GUIHost.Cameras:
-                if cam['Id'] in self.GUIHost.Hardware:
-                    camHW = self.GUIHost.Hardware[cam['Id']]
-                    qual = camHW.PresetRecallCommand.get('qualifier', None)
-                    Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
-                    camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
-        else:
-            if type(camera) is SystemHardwareController:
-                camHW = camera
-            elif type(camera) is str:
-                if camera in self.GUIHost.Hardware:
-                    camHW = self.GUIHost.Hardware[camera]
-                else:
-                    raise KeyError('No hardware item found for Switcher Id ({})'.format(camera))
-            else:
-                raise TypeError('Camera must be a SystemHardwareController object or string camera Id')
-            
-            qual = camHW.PresetRecallCommand.get('qualifier', None)
-            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(camHW.PresetRecallCommand['command'], str(0), qual))
-            camHW.interface.Set(camHW.PresetRecallCommand['command'], str(0), qual)
+        self.__SendCameraToPreset(camera, 0)
 
+    def SendCameraPrivate(self, camera: Union['SystemHardwareController', str]=None):
+        self.__SendCameraToPreset(camera, 254)
 
 ## End Class Definitions -------------------------------------------------------
 ##

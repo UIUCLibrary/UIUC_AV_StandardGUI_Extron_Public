@@ -253,6 +253,12 @@
       "repeatTime": null
     },
     {
+      "Name": "Ctl-Camera-MirrorCtls",
+      "ID": 6127,
+      "holdTime": null,
+      "repeatTime": null
+    },
+    {
       "Name": "WPD-ClearPosts",
       "ID": 6151,
       "holdTime": null,
@@ -633,6 +639,12 @@
     {
       "Name": "Shutdown-Cancel",
       "ID": 11902,
+      "holdTime": null,
+      "repeatTime": null
+    },
+    {
+      "Name": "Show-Tips",
+      "ID": 11996,
       "holdTime": null,
       "repeatTime": null
     },

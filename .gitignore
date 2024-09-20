@@ -1,10 +1,20 @@
-# inore vscode settings
+# ignore vscode settings
 .vscode/
-__pycache__/
-secrets*
-ConnectionHandler.py
-hardware/*.pdf
-eup/*
+
+# ignore pycache
+**/__pycache__/**
+
+# ignore secrets files
+**/secrets*
+
+# ignore testing and coverage files
+eup/**
 .coverage
-htmlcov/*
-*.log
+htmlcov/**
+
+# ignore log files
+**/*.log
+
+# ignore Extron certification and credential files
+**/*-certification.dat
+**/*-credential.dat

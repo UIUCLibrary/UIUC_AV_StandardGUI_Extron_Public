@@ -14,9 +14,8 @@
 # limitations under the License.
 ################################################################################
 
-from typing import TYPE_CHECKING, Dict, Tuple, List, Union, Callable
+from typing import TYPE_CHECKING, Dict, Tuple, Union
 if TYPE_CHECKING: # pragma: no cover
-    from uofi_gui import GUIController
     from uofi_gui.uiObjects import ExUIDevice
     from extronlib.ui import Button, Slider
     
@@ -24,7 +23,7 @@ if TYPE_CHECKING: # pragma: no cover
 from extronlib import event
 from extronlib.system import Wait
 from extronlib.interface import RelayInterface
-from extronlib.ui import Button, Knob, Label, Level, Slider
+from extronlib.ui import Button, Slider
 
 ## End ControlScript Import ----------------------------------------------------
 ##
@@ -34,7 +33,7 @@ from extronlib.ui import Button, Knob, Label, Level, Slider
 ##
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
-from utilityFunctions import DictValueSearchByKey, Log, RunAsync, debug
+from utilityFunctions import DictValueSearchByKey, Log
 from uofi_gui.sourceControls import Destination
 
 ## End User Import -------------------------------------------------------------
@@ -81,6 +80,7 @@ class DisplayController:
         conf_assign = 1
         mon_assign = 1
         proj_assign = 1
+        aud_assign = 1
         for dest in self.GUIHost.Destinations:
             self.Destinations[dest['id']] = dest
             self.Destinations[dest['id']]['hw'] = self.GUIHost.Hardware.get(dest['id'], None)
@@ -157,6 +157,11 @@ class DisplayController:
                         pass
                 
                 proj_assign += 1
+                
+            elif dest['type'] == 'aud':
+                self.Destinations[dest['id']]['hw_type'] = 'conf'
+                self.Destinations[dest['id']]['ctl_group'] = str(aud_assign)
+                aud_assign += 1
         
         @event([ctl for ctl in self.__ControlList if type(ctl) is Slider], ['Changed']) # pragma: no cover
         def sliderFillHandler(control: 'Slider', action: str, value: float):
@@ -282,14 +287,14 @@ class DisplayController:
                     control.SetState(0)
             elif control.CtlType == 'Up':
                 # send screen up
-                self.Destinations[control.DestID]['Scn']['up'].Pulse(2)
+                self.Destinations[control.DestID]['Scn']['up'].Pulse(0.2)
                 # Log('Pulse Up Relay')
                 @Wait(3) # pragma: no cover
                 def delayFeedbackHandler():
                     control.SetState(0)
             elif control.CtlType == 'Dn':
                 # send screen down
-                self.Destinations[control.DestID]['Scn']['dn'].Pulse(2)
+                self.Destinations[control.DestID]['Scn']['dn'].Pulse(0.2)
                 # Log('Pulse Down Relay')
                 @Wait(3) # pragma: no cover
                 def delayFeedbackHandler():
@@ -297,8 +302,8 @@ class DisplayController:
             elif control.CtlType == 'Stop':
                 # send screen stop
                 # This assumes that the screen stop command is to close both the up and down contact closures
-                self.Destinations[control.DestID]['Scn']['up'].Pulse(2)
-                self.Destinations[control.DestID]['Scn']['dn'].Pulse(2)
+                self.Destinations[control.DestID]['Scn']['up'].Pulse(0.2)
+                self.Destinations[control.DestID]['Scn']['dn'].Pulse(0.2)
                 # Log('Pulse Up & Down Relays')
                 @Wait(3) # pragma: no cover
                 def delayFeedbackHandler():
@@ -319,9 +324,12 @@ class DisplayController:
     # Public Methods +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     def SetDisplayPower(self, dest: Union[str, 'Destination'], state: str='On'):
+        # Log('Dest: {}; State: {}'.format(dest, state))
         if type(dest) is str:
+            destType = self.Destinations[dest]['hw_type']
             Hw = self.Destinations[dest]['hw']
         elif type(dest) is Destination:
+            destType = dest.Type
             Hw = self.Destinations[dest.Id]['hw']
         else:
             raise TypeError("Dest must either by a string destination ID or a Destination object")
@@ -329,15 +337,18 @@ class DisplayController:
         if Hw is None:
             raise LookupError('Destination ({}) not found'.format(dest))
         
-        qual = Hw.PowerCommand.get('qualifier', None)
-        
-        Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(Hw.PowerCommand['command'], state, qual))
-        Hw.interface.Set(Hw.PowerCommand['command'], state, qual)
+        if destType not in ['conf', 'aud']:
+            qual = Hw.PowerCommand.get('qualifier', None)
+            
+            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(Hw.PowerCommand['command'], state, qual))
+            Hw.interface.Set(Hw.PowerCommand['command'], state, qual)
     
     def SetDisplaySource(self, dest: Union[str, 'Destination']):
         if type(dest) is str:
+            destType = self.Destinations[dest]['hw_type']
             Hw = self.Destinations[dest]['hw']
         elif type(dest) is Destination:
+            destType = dest.Type
             Hw = self.Destinations[dest.Id]['hw']
         else:
             raise TypeError("Dest must either by a string destination ID or a Destination object")
@@ -345,25 +356,26 @@ class DisplayController:
         if Hw is None:
             raise LookupError('Destination hardware ({}) not found'.format(dest))
         
-        qual = Hw.SourceCommand.get('qualifier', None)
-        
-        if 'value' in Hw.SourceCommand:
-            state = Hw.SourceCommand['value']
-        else:
-            raise KeyError('Display source value not found for {}'.format(dest))
-        
-        Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(Hw.SourceCommand['command'], state, qual))
-        Hw.interface.Set(Hw.SourceCommand['command'], state, qual)
+        if destType not in ['conf', 'aud']:
+            qual = Hw.SourceCommand.get('qualifier', None)
+            
+            if 'value' in Hw.SourceCommand:
+                state = Hw.SourceCommand['value']
+            else:
+                raise KeyError('Display source value not found for {}'.format(dest))
+            
+            Log('Send Command - Command: {}, Value: {}, Qualifier: {}'.format(Hw.SourceCommand['command'], state, qual))
+            Hw.interface.Set(Hw.SourceCommand['command'], state, qual)
         
     def DisplayPowerFeedback(self, HwID: str, state: str):
         # Log('Feedback Display - Display Power - Hardware: {}, State: {}'.format(HwID, state))
         dest = self.Destinations[HwID]
         StateMap = \
             {
-                'On': ['On', 'on', 'Power On'],
-                'Off': ['Off', 'off', 'Power Off', 'Standby (Power Save)', 'Suspend (Power Save)'],
-                'Warming': ['Warming', 'Warming up'],
-                'Cooling': ['Cooling', 'Cooling down']
+                'On': ['On', 'on', 'Power On', 'ON', 'Power on', 'POWER ON'],
+                'Off': ['Off', 'off', 'Power Off', 'Standby (Power Save)', 'Suspend (Power Save)', 'OFF', 'Power off', 'POWER OFF'],
+                'Warming': ['Warming', 'Warming up', 'Warming Up', 'WARMING', 'WARMING UP'],
+                'Cooling': ['Cooling', 'Cooling down', 'Cooling Down', 'COOLING', 'COOLING DOWN']
             }
         if state in StateMap['On']:
             # Log('Show button state On')

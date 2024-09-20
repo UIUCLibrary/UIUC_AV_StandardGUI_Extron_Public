@@ -14,9 +14,8 @@
 # limitations under the License.
 ################################################################################
 
-from typing import TYPE_CHECKING, Dict, Tuple, List, Union, Callable
+from typing import TYPE_CHECKING, Dict, Tuple, Union
 if TYPE_CHECKING: # pragma: no cover
-    from uofi_gui import GUIController
     from uofi_gui.uiObjects import ExUIDevice
     
 ## Begin ControlScript Import --------------------------------------------------
@@ -33,7 +32,7 @@ import math
 ##
 ## Begin User Import -----------------------------------------------------------
 #### Custom Code Modules
-from utilityFunctions import DictValueSearchByKey, Log, RunAsync, debug
+from utilityFunctions import Log
 
 ## End User Import -------------------------------------------------------------
 ##
@@ -251,7 +250,11 @@ class AudioController:
         hw = self.GUIHost.Hardware[cmd['HwId']]
         hwCmd = getattr(hw, cmd['HwCmd'])
         qual = hwCmd.get('qualifier', None)
-        value = 'On' if setState else 'Off'
+        
+        if hwCmd in ['LogicState', 'LogicInputOutput']:
+            value = 'True' if setState else 'False'
+        else:
+            value = 'On' if setState else 'Off'
         
         mic['mute'] = setState
         
@@ -259,7 +262,7 @@ class AudioController:
             btn.SetBlinking('Medium', [1,2])
         else:
             btn.SetState(0)
-        
+        Log("Mic Mute Command: {} | {} | {}".format(hwCmd['command'], value, qual))
         hw.interface.Set(hwCmd['command'], value, qual)
         self.AllMicsMuteButtonState()
     
@@ -707,11 +710,17 @@ class AudioController:
         # Unmute all sources
         self.ProgMute = False
         self.AllMicsMute = False
+        # Unmute Parle Mics
+        if getattr(self.DSP, 'HasParle', False):
+            self.DSP.interface.Set('LogicState', 'False', {'Instance Tag': 'ParleLogic', 'Channel': '1'})
     
     def AudioShutdown(self):
         # Mute all sources
         self.ProgMute = True
         self.AllMicsMute = True
+        # Mute Parle Mics
+        if getattr(self.DSP, 'HasParle', False):
+            self.DSP.interface.Set('LogicState', 'True', {'Instance Tag': 'ParleLogic', 'Channel': '1'})
     
     def ToggleProgMute(self):
         self.ProgMute = not self.__ProgMute
